@@ -119,8 +119,8 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         {
             info.Contact = ContactManifold.contacts.Elements[index];
             //Find the contact's force.
-            info.FrictionImpulse = 0;
-            info.NormalImpulse = 0;
+            info.FrictionImpulse = F64.C0;
+            info.NormalImpulse = F64.C0;
             for (int i = 0; i < contactConstraint.frictionConstraints.Count; i++)
             {
                 if (contactConstraint.frictionConstraints.Elements[i].PenetrationConstraint.contact == info.Contact)

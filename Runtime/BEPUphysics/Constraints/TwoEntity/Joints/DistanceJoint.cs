@@ -2,6 +2,7 @@ using System;
 using BEPUphysics.Entities;
 
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUphysics.Constraints.TwoEntity.Joints
 {
@@ -10,20 +11,20 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
     /// </summary>
     public class DistanceJoint : Joint, I1DImpulseConstraintWithError, I1DJacobianConstraint
     {
-        private float accumulatedImpulse;
+        private Fix64 accumulatedImpulse;
         private Vector3 anchorA;
 
         private Vector3 anchorB;
-        private float biasVelocity;
+        private Fix64 biasVelocity;
         private Vector3 jAngularA, jAngularB;
         private Vector3 jLinearA, jLinearB;
 
         /// <summary>
         /// Distance maintained between the anchors.
         /// </summary>
-        protected float distance;
+        protected Fix64 distance;
 
-        private float error;
+        private Fix64 error;
 
         private Vector3 localAnchorA;
 
@@ -31,7 +32,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
 
 
         private Vector3 offsetA, offsetB;
-        private float velocityToImpulse;
+        private Fix64 velocityToImpulse;
 
         /// <summary>
         /// Constructs a distance joint.
@@ -73,10 +74,10 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// <summary>
         /// Gets or sets the distance maintained between the anchors.
         /// </summary>
-        public float Distance
+        public Fix64 Distance
         {
             get { return distance; }
-            set { distance = Math.Max(0, value); }
+            set { distance = MathHelper.Max(F64.C0, value); }
         }
 
         /// <summary>
@@ -138,11 +139,11 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// <summary>
         /// Gets the current relative velocity between the connected entities with respect to the constraint.
         /// </summary>
-        public float RelativeVelocity
+        public Fix64 RelativeVelocity
         {
             get
             {
-                float lambda, dot;
+                Fix64 lambda, dot;
                 Vector3.Dot(ref jLinearA, ref connectionA.linearVelocity, out lambda);
                 Vector3.Dot(ref jAngularA, ref connectionA.angularVelocity, out dot);
                 lambda += dot;
@@ -158,7 +159,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// <summary>
         /// Gets the total impulse applied by this constraint.
         /// </summary>
-        public float TotalImpulse
+        public Fix64 TotalImpulse
         {
             get { return accumulatedImpulse; }
         }
@@ -166,7 +167,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// <summary>
         /// Gets the current constraint error.
         /// </summary>
-        public float Error
+        public Fix64 Error
         {
             get { return error; }
         }
@@ -215,7 +216,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// Gets the mass matrix of the constraint.
         /// </summary>
         /// <param name="outputMassMatrix">Constraint's mass matrix.</param>
-        public void GetMassMatrix(out float outputMassMatrix)
+        public void GetMassMatrix(out Fix64 outputMassMatrix)
         {
             outputMassMatrix = velocityToImpulse;
         }
@@ -226,10 +227,10 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
         /// Calculates and applies corrective impulses.
         /// Called automatically by space.
         /// </summary>
-        public override float SolveIteration()
+        public override Fix64 SolveIteration()
         {
             //Compute the current relative velocity.
-            float lambda, dot;
+            Fix64 lambda, dot;
             Vector3.Dot(ref jLinearA, ref connectionA.linearVelocity, out lambda);
             Vector3.Dot(ref jAngularA, ref connectionA.angularVelocity, out dot);
             lambda += dot;
@@ -264,14 +265,14 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
                 connectionB.ApplyAngularImpulse(ref impulse);
             }
 
-            return (Math.Abs(lambda));
+            return (Fix64.Abs(lambda));
         }
 
         /// <summary>
         /// Calculates necessary information for velocity solving.
         /// </summary>
         /// <param name="dt">Time in seconds since the last update.</param>
-        public override void Update(float dt)
+        public override void Update(Fix64 dt)
         {
             //Transform the anchors and offsets into world space.
             Matrix3x3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out offsetA);
@@ -282,7 +283,7 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             //Compute the distance.
             Vector3 separation;
             Vector3.Subtract(ref anchorB, ref anchorA, out separation);
-            float currentDistance = separation.Length();
+            Fix64 currentDistance = separation.Length();
 
             //Compute jacobians
             if (currentDistance > Toolbox.Epsilon)
@@ -336,14 +337,14 @@ namespace BEPUphysics.Constraints.TwoEntity.Joints
             {
                 //No point in trying to solve with two kinematics.
                 isActiveInSolver = false;
-                accumulatedImpulse = 0;
+                accumulatedImpulse = F64.C0;
                 return;
             }
 
-            float errorReduction;
-            springSettings.ComputeErrorReductionAndSoftness(dt, 1 / dt, out errorReduction, out softness);
+            Fix64 errorReduction;
+            springSettings.ComputeErrorReductionAndSoftness(dt, F64.C1 / dt, out errorReduction, out softness);
 
-            velocityToImpulse = 1 / (softness + velocityToImpulse);
+            velocityToImpulse = F64.C1 / (softness + velocityToImpulse);
             //Finish computing jacobian; it's down here as an optimization (since it didn't need to be negated in mass matrix)
             jAngularA.X = -jAngularA.X;
             jAngularA.Y = -jAngularA.Y;

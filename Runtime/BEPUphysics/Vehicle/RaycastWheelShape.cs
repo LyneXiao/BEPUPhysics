@@ -7,6 +7,7 @@ using BEPUphysics.CollisionRuleManagement;
 using BEPUutilities;
 using BEPUphysics.Materials;
 using System;
+using FixMath.NET;
 
 namespace BEPUphysics.Vehicle
 {
@@ -15,7 +16,7 @@ namespace BEPUphysics.Vehicle
     /// </summary>
     public class RaycastWheelShape : WheelShape
     {
-        private float graphicalRadius;
+        private Fix64 graphicalRadius;
 
         /// <summary>
         /// Creates a new raycast based wheel shape.
@@ -26,7 +27,7 @@ namespace BEPUphysics.Vehicle
         /// like position and orientation.</param>
         /// <param name="localGraphicTransform">Local graphic transform of the wheel shape.
         /// This transform is applied first when creating the shape's worldTransform.</param>
-        public RaycastWheelShape(float graphicalRadius, Matrix localGraphicTransform)
+        public RaycastWheelShape(Fix64 graphicalRadius, Matrix localGraphicTransform)
         {
             Radius = graphicalRadius;
             LocalGraphicTransform = localGraphicTransform;
@@ -38,12 +39,12 @@ namespace BEPUphysics.Vehicle
         /// determining aesthetic properties of a vehicle wheel,
         /// like position and orientation.
         /// </summary>
-        public override sealed float Radius
+        public override sealed Fix64 Radius
         {
             get { return graphicalRadius; }
             set
             {
-                graphicalRadius = Math.Max(value, 0);
+                graphicalRadius = MathHelper.Max(value, F64.C0);
                 Initialize();
             }
         }
@@ -72,7 +73,7 @@ namespace BEPUphysics.Vehicle
             Vector3 worldDirection;
             Matrix.Transform(ref wheel.suspension.localDirection, ref worldTransform, out worldDirection);
 
-            float length = wheel.suspension.currentLength - graphicalRadius;
+            Fix64 length = wheel.suspension.currentLength - graphicalRadius;
             newPosition.X = worldAttachmentPoint.X + worldDirection.X * length;
             newPosition.Y = worldAttachmentPoint.Y + worldDirection.Y * length;
             newPosition.Z = worldAttachmentPoint.Z + worldDirection.Z * length;
@@ -102,9 +103,9 @@ namespace BEPUphysics.Vehicle
         /// <param name="entity">Supporting object.</param>
         /// <param name="material">Material of the wheel.</param>
         /// <returns>Whether or not any support was found.</returns>
-        protected internal override bool FindSupport(out Vector3 location, out Vector3 normal, out float suspensionLength, out Collidable supportingCollidable, out Entity entity, out Material material)
+        protected internal override bool FindSupport(out Vector3 location, out Vector3 normal, out Fix64 suspensionLength, out Collidable supportingCollidable, out Entity entity, out Material material)
         {
-            suspensionLength = float.MaxValue;
+            suspensionLength = Fix64.MaxValue;
             location = Toolbox.NoVector;
             supportingCollidable = null;
             entity = null;
@@ -149,7 +150,7 @@ namespace BEPUphysics.Vehicle
             }
             if (hit)
             {
-                if (suspensionLength > 0)
+                if (suspensionLength > F64.C0)
                     normal.Normalize();
                 else
                     Vector3.Negate(ref wheel.suspension.worldDirection, out normal);
@@ -187,9 +188,9 @@ namespace BEPUphysics.Vehicle
             Vector3 newPosition;
 #endif
 
-            newPosition.X = wheel.suspension.worldAttachmentPoint.X + wheel.suspension.worldDirection.X * wheel.suspension.restLength * .5f;
-            newPosition.Y = wheel.suspension.worldAttachmentPoint.Y + wheel.suspension.worldDirection.Y * wheel.suspension.restLength * .5f;
-            newPosition.Z = wheel.suspension.worldAttachmentPoint.Z + wheel.suspension.worldDirection.Z * wheel.suspension.restLength * .5f;
+            newPosition.X = wheel.suspension.worldAttachmentPoint.X + wheel.suspension.worldDirection.X * wheel.suspension.restLength * F64.C0p5;
+            newPosition.Y = wheel.suspension.worldAttachmentPoint.Y + wheel.suspension.worldDirection.Y * wheel.suspension.restLength * F64.C0p5;
+            newPosition.Z = wheel.suspension.worldAttachmentPoint.Z + wheel.suspension.worldDirection.Z * wheel.suspension.restLength * F64.C0p5;
 
             detector.Position = newPosition;
             detector.OrientationMatrix = wheel.Vehicle.Body.orientationMatrix;

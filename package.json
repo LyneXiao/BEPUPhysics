@@ -1,7 +1,7 @@
 {
   "name": "com.bepu.physics",
   "displayName": "BepuPhyscisV1",
-  "version": "1.0.0",
+  "version": "1.1.0",
   "unity": "2018.4",
   "description": "A copy from https://github.com/bepu/bepuphysics1",
   "keywords": [

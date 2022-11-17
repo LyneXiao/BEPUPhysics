@@ -1,4 +1,6 @@
-﻿namespace BEPUphysics
+﻿using FixMath.NET;
+
+namespace BEPUphysics
 {
     ///<summary>
     /// Contains settings for the instance's time step.
@@ -16,11 +18,11 @@
         /// The other method, Space.Update(float), will try to move time forward by the amount specified in the parameter by taking steps of TimeStepDuration size.
         /// Defaults to 1/60.
         /// </summary>
-        public float TimeStepDuration = 1f / 60;
+        public Fix64 TimeStepDuration = 1 / 60m;
 
         /// <summary>
         /// Amount of time accumulated by previous calls to Space.Update(float) that has not yet been simulated.
         /// </summary>
-        public float AccumulatedTime;
+        public Fix64 AccumulatedTime;
     }
 }

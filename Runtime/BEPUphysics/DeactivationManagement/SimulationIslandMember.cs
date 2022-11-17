@@ -2,6 +2,7 @@
 using BEPUphysics.Entities;
 using BEPUutilities;
 using BEPUutilities.DataStructures;
+using FixMath.NET;
 
 namespace BEPUphysics.DeactivationManagement
 {
@@ -14,8 +15,8 @@ namespace BEPUphysics.DeactivationManagement
         //This system could be expanded to allow non-entity simulation island members.
         //However, there are no such objects on the near horizon, and it is unlikely that anyone will be interested in developing custom simulation island members.
         Entity owner;
-        float previousVelocity;
-        internal float velocityTimeBelowLimit;
+		Fix64 previousVelocity;
+        internal Fix64 velocityTimeBelowLimit;
         internal bool isSlowing;
 
         /// <summary>
@@ -50,10 +51,10 @@ namespace BEPUphysics.DeactivationManagement
         /// Updates the member's deactivation state.
         ///</summary>
         ///<param name="dt">Timestep duration.</param>
-        public void UpdateDeactivationCandidacy(float dt)
+        public void UpdateDeactivationCandidacy(Fix64 dt)
         {
             //Get total velocity, and see if the entity is losing energy.
-            float velocity = owner.linearVelocity.LengthSquared() + owner.angularVelocity.LengthSquared();
+            Fix64 velocity = owner.linearVelocity.LengthSquared() + owner.angularVelocity.LengthSquared();
 
             bool isActive = IsActive;
             if (isActive)
@@ -67,7 +68,7 @@ namespace BEPUphysics.DeactivationManagement
                     if (velocity < DeactivationManager.velocityLowerLimitSquared)
                         velocityTimeBelowLimit += dt;
                     else
-                        velocityTimeBelowLimit = 0;
+                        velocityTimeBelowLimit = F64.C0;
 
                     if (!IsAlwaysActive)
                     {
@@ -99,7 +100,7 @@ namespace BEPUphysics.DeactivationManagement
                 else
                 {
                     //If it's not dynamic, then deactivation candidacy is based entirely on whether or not the object has velocity (and the IsAlwaysActive state).
-                    IsDeactivationCandidate = velocity == 0 && !IsAlwaysActive;
+                    IsDeactivationCandidate = velocity == F64.C0 && !IsAlwaysActive;
 
                     if (IsDeactivationCandidate)
                     {
@@ -108,10 +109,10 @@ namespace BEPUphysics.DeactivationManagement
                         //Forcing a kinematic active needs to allow the system to run for a whole frame.
                         //This means that in here, if it is < 0, we set it to zero.  It will still update for the rest of the frame.
                         //Then, next frame, when its == 0, set it to 1.  It will be considered inactive unless it was activated manually again.
-                        if (velocityTimeBelowLimit == 0)
-                            velocityTimeBelowLimit = 1;
-                        else if (velocityTimeBelowLimit < 0)
-                            velocityTimeBelowLimit = 0;
+                        if (velocityTimeBelowLimit == F64.C0)
+                            velocityTimeBelowLimit = F64.C1;
+                        else if (velocityTimeBelowLimit < F64.C0)
+                            velocityTimeBelowLimit = F64.C0;
                     }
                     else
                     {
@@ -119,7 +120,7 @@ namespace BEPUphysics.DeactivationManagement
                         velocityTimeBelowLimit = -1;
                     }
 
-                    if (velocityTimeBelowLimit <= 0)
+                    if (velocityTimeBelowLimit <= F64.C0)
                     {
                         //There's a single oddity we need to worry about in this case.
                         //An active kinematic object has no simulation island.  Without intervention,
@@ -185,7 +186,7 @@ namespace BEPUphysics.DeactivationManagement
                 }
                 if (!value)
                 {
-                    velocityTimeBelowLimit = 0;
+                    velocityTimeBelowLimit = F64.C0;
                 }
             }
         }
@@ -244,7 +245,7 @@ namespace BEPUphysics.DeactivationManagement
                     //-A kinematic entity with a velocityTimeBelowLimit of 0 did not have its activity refreshed during the deactivation candidacy, 
                     //but we still consider it active so that a full frame can complete.
                     //-A kinematic entity with a velocityTimeBelowLimit of 1 did not have its activity refreshed in the last two frames so we can consider it inactive.
-                    return velocityTimeBelowLimit <= 0;
+                    return velocityTimeBelowLimit <= F64.C0;
                 }
             }
 

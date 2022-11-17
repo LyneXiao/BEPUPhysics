@@ -1,6 +1,8 @@
 ﻿
 
 using BEPUutilities;
+using FixMath.NET;
+
 namespace BEPUphysics.Paths
 {
     /// <summary>
@@ -16,7 +18,7 @@ namespace BEPUphysics.Paths
         /// </summary>
         /// <param name="speedCurve">Curve defining speeds to use.</param>
         /// <param name="curve">Curve to wrap.</param>
-        public VariableLinearSpeedCurve(Path<float> speedCurve, Curve<Vector3> curve)
+        public VariableLinearSpeedCurve(Path<Fix64> speedCurve, Curve<Vector3> curve)
             : base(speedCurve, curve)
         {
         }
@@ -28,14 +30,14 @@ namespace BEPUphysics.Paths
         /// <param name="curve">Curve to wrap.</param>
         /// <param name="sampleCount">Number of samples to use when constructing the wrapper curve.
         /// More samples increases the accuracy of the speed requirement at the cost of performance.</param>
-        public VariableLinearSpeedCurve(Path<float> speedCurve, Curve<Vector3> curve, int sampleCount)
+        public VariableLinearSpeedCurve(Path<Fix64> speedCurve, Curve<Vector3> curve, int sampleCount)
             : base(speedCurve, curve, sampleCount)
         {
         }
 
-        protected override float GetDistance(Vector3 start, Vector3 end)
+        protected override Fix64 GetDistance(Vector3 start, Vector3 end)
         {
-            float distance;
+            Fix64 distance;
             Vector3.Distance(ref start, ref end, out distance);
             return distance;
         }

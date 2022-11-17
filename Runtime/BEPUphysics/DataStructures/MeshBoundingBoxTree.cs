@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Globalization;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUphysics.DataStructures
 {
@@ -185,9 +186,9 @@ namespace BEPUphysics.DataStructures
         {
             if (root != null)
             {
-                float result;
+                Fix64 result;
                 if (ray.Intersects(ref root.BoundingBox, out result))
-                    root.GetOverlaps(ref ray, float.MaxValue, outputOverlappedElements);
+                    root.GetOverlaps(ref ray, Fix64.MaxValue, outputOverlappedElements);
             }
             return outputOverlappedElements.Count > 0;
         }
@@ -198,11 +199,11 @@ namespace BEPUphysics.DataStructures
         /// <param name="maximumLength">Maximum length of the ray in units of the ray's length.</param>
         /// <param name="outputOverlappedElements">Indices of triangles in the index buffer with bounding boxes which are overlapped by the query.</param>
         /// <returns>Whether or not any elements were overlapped.</returns>
-        public bool GetOverlaps(Ray ray, float maximumLength, IList<int> outputOverlappedElements)
+        public bool GetOverlaps(Ray ray, Fix64 maximumLength, IList<int> outputOverlappedElements)
         {
             if (root != null)
             {
-                float result;
+                Fix64 result;
                 if (ray.Intersects(ref root.BoundingBox, out result))
                     root.GetOverlaps(ref ray, maximumLength, outputOverlappedElements);
             }
@@ -215,7 +216,7 @@ namespace BEPUphysics.DataStructures
             internal abstract void GetOverlaps(ref BoundingBox boundingBox, IList<int> outputOverlappedElements);
             internal abstract void GetOverlaps(ref BoundingSphere boundingSphere, IList<int> outputOverlappedElements);
             //internal abstract void GetOverlaps(ref BoundingFrustum boundingFrustum, IList<int> outputOverlappedElements);
-            internal abstract void GetOverlaps(ref Ray ray, float maximumLength, IList<int> outputOverlappedElements);
+            internal abstract void GetOverlaps(ref Ray ray, Fix64 maximumLength, IList<int> outputOverlappedElements);
 
             internal abstract bool IsLeaf { get; }
 
@@ -276,9 +277,9 @@ namespace BEPUphysics.DataStructures
             //        ChildB.GetOverlaps(ref boundingFrustum, outputOverlappedElements);
             //}
 
-            internal override void GetOverlaps(ref Ray ray, float maximumLength, IList<int> outputOverlappedElements)
+            internal override void GetOverlaps(ref Ray ray, Fix64 maximumLength, IList<int> outputOverlappedElements)
             {
-                float result;
+                Fix64 result;
                 if (ray.Intersects(ref ChildA.BoundingBox, out result) && result < maximumLength)
                     ChildA.GetOverlaps(ref ray, maximumLength, outputOverlappedElements);
                 if (ray.Intersects(ref ChildB.BoundingBox, out result) && result < maximumLength)
@@ -320,13 +321,13 @@ namespace BEPUphysics.DataStructures
                 BoundingBox.CreateMerged(ref ChildB.BoundingBox, ref node.BoundingBox, out mergedB);
 
                 Vector3 offset;
-                float originalAVolume, originalBVolume;
+                Fix64 originalAVolume, originalBVolume;
                 Vector3.Subtract(ref ChildA.BoundingBox.Max, ref ChildA.BoundingBox.Min, out offset);
                 originalAVolume = offset.X * offset.Y * offset.Z;
                 Vector3.Subtract(ref ChildB.BoundingBox.Max, ref ChildB.BoundingBox.Min, out offset);
                 originalBVolume = offset.X * offset.Y * offset.Z;
 
-                float mergedAVolume, mergedBVolume;
+                Fix64 mergedAVolume, mergedBVolume;
                 Vector3.Subtract(ref mergedA.Max, ref mergedA.Min, out offset);
                 mergedAVolume = offset.X * offset.Y * offset.Z;
                 Vector3.Subtract(ref mergedB.Max, ref mergedB.Min, out offset);
@@ -395,7 +396,7 @@ namespace BEPUphysics.DataStructures
         /// <summary>
         /// The tiny extra margin added to leaf bounding boxes that allow the volume cost metric to function properly even in degenerate cases.
         /// </summary>
-        public static float LeafMargin = .001f;
+        public static Fix64 LeafMargin = (Fix64).001m;
         sealed class LeafNode : Node
         {
             int LeafIndex;
@@ -434,7 +435,7 @@ namespace BEPUphysics.DataStructures
             //    outputOverlappedElements.Add(LeafIndex);
             //}
 
-            internal override void GetOverlaps(ref Ray ray, float maximumLength, IList<int> outputOverlappedElements)
+            internal override void GetOverlaps(ref Ray ray, Fix64 maximumLength, IList<int> outputOverlappedElements)
             {
                 outputOverlappedElements.Add(LeafIndex);
             }

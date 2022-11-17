@@ -4,6 +4,8 @@ using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests.CollisionAlgorithms;
 using BEPUphysics.CollisionShapes.ConvexShapes;
 using BEPUutilities.DataStructures;
+using FixMath.NET;
+using BEPUutilities;
 
 namespace BEPUphysics.CollisionTests.Manifolds
 {
@@ -52,13 +54,13 @@ namespace BEPUphysics.CollisionTests.Manifolds
         /// Updates the manifold.
         ///</summary>
         ///<param name="dt">Timestep duration.</param>
-        public override void Update(float dt)
+        public override void Update(Fix64 dt)
         {
             ContactData contactData;
             bool colliding = false;
             if (SphereTester.AreSpheresColliding(sphereA.Shape, sphereB.Shape, ref sphereA.worldTransform.Position, ref sphereB.worldTransform.Position, out contactData))
             {
-                if (!previouslyColliding && contactData.PenetrationDepth >= 0) //Don't use the contact if it's an initial contact and the depth is negative.  Why not? Bounciness and InitialCollisionDetected.
+                if (!previouslyColliding && contactData.PenetrationDepth >= F64.C0) //Don't use the contact if it's an initial contact and the depth is negative.  Why not? Bounciness and InitialCollisionDetected.
                 {
                     Add(ref contactData);
                     colliding = true;

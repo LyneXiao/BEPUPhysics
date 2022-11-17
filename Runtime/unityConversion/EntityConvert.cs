@@ -1,5 +1,6 @@
 using BEPUphysics.BroadPhaseEntries;
 using BEPUphysics.Entities;
+using FixMath.NET;
 using UnityEngine;
 
 namespace UnityConversion
@@ -27,9 +28,9 @@ namespace UnityConversion
             return unityVelocity;
         }
 
-        public static void SetPosition(this Entity entity, float x, float y, float z)
+        public static void SetPosition(this Entity entity, decimal x, decimal y, decimal z)
         {
-            SetPosition(entity, new BEPUutilities.Vector3( x,  y,  z));
+            SetPosition(entity, new BEPUutilities.Vector3((Fix64) x, (Fix64) y, (Fix64) z));
         }
 
         public static void SetPosition(this Entity entity, in Vector3 position)
@@ -67,9 +68,9 @@ namespace UnityConversion
             entity.LinearVelocity = bepuVector;
         }
 
-        public static void SetVelocity(this Entity entity, float x, float y, float z)
+        public static void SetVelocity(this Entity entity, decimal x, decimal y, decimal z)
         {
-            entity.LinearVelocity = new BEPUutilities.Vector3( x,  y,  z);
+            entity.LinearVelocity = new BEPUutilities.Vector3((Fix64) x, (Fix64) y, (Fix64) z);
         }
 
         public static void SetTag(this Entity entity, string tag)

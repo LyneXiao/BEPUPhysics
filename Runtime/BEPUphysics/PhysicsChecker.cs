@@ -19,7 +19,7 @@ namespace BEPUphysics
         public static void Validate(this Contact contact)
         {
             contact.Normal.Validate();
-            if (contact.Normal.LengthSquared() < 0.9f)
+            if (contact.Normal.LengthSquared() < F64.C0p9)
                 throw new ArithmeticException("Invalid contact normal.");
             contact.Position.Validate();
             contact.PenetrationDepth.Validate();

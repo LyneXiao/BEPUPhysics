@@ -1,5 +1,6 @@
 ﻿using System;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUik
 {
@@ -71,10 +72,10 @@ namespace BEPUik
             Vector3 restrictedAxis;
             Vector3.Cross(ref worldHingeAxis, ref worldTwistAxis, out restrictedAxis);
             //Attempt to normalize the restricted axis.
-            float lengthSquared = restrictedAxis.LengthSquared();
+            Fix64 lengthSquared = restrictedAxis.LengthSquared();
             if (lengthSquared > Toolbox.Epsilon)
             {
-                Vector3.Divide(ref restrictedAxis, (float)Math.Sqrt(lengthSquared), out restrictedAxis);
+                Vector3.Divide(ref restrictedAxis, Fix64.Sqrt(lengthSquared), out restrictedAxis);
             }
             else
             {
@@ -90,11 +91,11 @@ namespace BEPUik
               };
             Matrix3x3.Negate(ref angularJacobianA, out angularJacobianB);
 
-            float error;
+            Fix64 error;
             Vector3.Dot(ref worldHingeAxis, ref worldTwistAxis, out error);
-            error = (float)Math.Acos(MathHelper.Clamp(error, -1, 1)) - MathHelper.PiOver2;
+            error = Fix64.Acos(MathHelper.Clamp(error, -1, F64.C1)) - MathHelper.PiOver2;
 
-            velocityBias = new Vector3(errorCorrectionFactor * error, 0, 0);
+            velocityBias = new Vector3(errorCorrectionFactor * error, F64.C0, F64.C0);
 
 
         }

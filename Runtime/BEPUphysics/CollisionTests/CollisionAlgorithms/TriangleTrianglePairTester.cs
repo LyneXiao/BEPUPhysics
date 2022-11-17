@@ -1,7 +1,7 @@
 ﻿using BEPUphysics.CollisionShapes.ConvexShapes;
 using BEPUutilities;
 using BEPUutilities.DataStructures;
-
+using FixMath.NET;
 
 namespace BEPUphysics.CollisionTests.CollisionAlgorithms
 {
@@ -33,18 +33,18 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
                         ContactData item;
                         contactList.Get(i, out item);
 
-                        float dot;
+                        Fix64 dot;
                         Vector3.Dot(ref item.Normal, ref normal, out dot);
                         if (sidedness == TriangleSidedness.Clockwise)
                         {
-                            if (dot < 0)
+                            if (dot < F64.C0)
                             {
                                 contactList.RemoveAt(i);
                             }
                         }
                         else
                         {
-                            if (dot > 0)
+                            if (dot > F64.C0)
                             {
                                 contactList.RemoveAt(i);
                             }

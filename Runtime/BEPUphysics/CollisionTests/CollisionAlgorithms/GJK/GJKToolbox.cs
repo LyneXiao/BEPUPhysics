@@ -3,6 +3,7 @@ using BEPUutilities;
  
 using BEPUphysics.Settings;
 using RigidTransform = BEPUutilities.RigidTransform;
+using FixMath.NET;
 
 namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
 {
@@ -73,9 +74,9 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
                 MinkowskiToolbox.GetLocalMinkowskiExtremePoint(shapeA, shapeB, ref direction, ref localtransformB, out extremePoint);
                 //Since this is a boolean test, we don't need to refine the simplex if it becomes apparent that we cannot reach the origin.
                 //If the most extreme point at any given time does not go past the origin, then we can quit immediately.
-                float dot;
+                Fix64 dot;
                 Vector3.Dot(ref extremePoint, ref closestPoint, out dot); //extreme point dotted against the direction pointing backwards towards the CSO. 
-                if (dot > 0)
+                if (dot > F64.C0)
                 {
                     // If it's positive, that means that the direction pointing towards the origin produced an extreme point 'in front of' the origin, eliminating the possibility of any intersection.
                     localSeparatingAxis = direction;
@@ -192,7 +193,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
         ///<param name="maximumLength">Maximum length of the ray in units of the ray direction's length.</param>
         ///<param name="hit">Hit data of the ray cast, if any.</param>
         ///<returns>Whether or not the ray hit the shape.</returns>
-        public static bool RayCast(Ray ray, ConvexShape shape, ref RigidTransform shapeTransform, float maximumLength,
+        public static bool RayCast(Ray ray, ConvexShape shape, ref RigidTransform shapeTransform, Fix64 maximumLength,
                                    out RayHit hit)
         {
             //Transform the ray into the object's local space.
@@ -203,14 +204,14 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
             Quaternion.Transform(ref ray.Direction, ref conjugate, out ray.Direction);
 
             Vector3 extremePointToRayOrigin, extremePoint;
-            hit.T = 0;
+            hit.T = F64.C0;
             hit.Location = ray.Position;
             hit.Normal = Toolbox.ZeroVector;
             Vector3 closestOffset = hit.Location;
 
             RaySimplex simplex = new RaySimplex();
 
-            float vw, closestPointDotDirection;
+            Fix64 vw, closestPointDotDirection;
             int count = 0;
             //This epsilon has a significant impact on performance and accuracy.  Changing it to use BigEpsilon instead increases speed by around 30-40% usually, but jigging is more evident.
             while (closestOffset.LengthSquared() >= Toolbox.Epsilon * simplex.GetErrorTolerance(ref ray.Position))
@@ -228,11 +229,11 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
                 Vector3.Dot(ref closestOffset, ref extremePointToRayOrigin, out vw);
                 //If the closest offset and the extreme point->ray origin direction point the same way,
                 //then we might be able to conservatively advance the point towards the surface.
-                if (vw > 0)
+                if (vw > F64.C0)
                 {
                     
                     Vector3.Dot(ref closestOffset, ref ray.Direction, out closestPointDotDirection);
-                    if (closestPointDotDirection >= 0)
+                    if (closestPointDotDirection >= F64.C0)
                     {
                         hit = new RayHit();
                         return false;
@@ -310,7 +311,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
             
 
             Vector3 w, p;
-            hit.T = 0;
+            hit.T = F64.C0;
             hit.Location = Vector3.Zero; //The ray starts at the origin.
             hit.Normal = Toolbox.ZeroVector;
             Vector3 v = hit.Location;
@@ -318,7 +319,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
             RaySimplex simplex = new RaySimplex();
 
  
-            float vw, vdir;
+            Fix64 vw, vdir;
             int count = 0;
             do
             {
@@ -335,16 +336,16 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
 
                 Vector3.Subtract(ref hit.Location, ref p, out w);
                 Vector3.Dot(ref v, ref w, out vw);
-                if (vw > 0)
+                if (vw > F64.C0)
                 {
                     Vector3.Dot(ref v, ref rayDirection, out vdir);
-                    if (vdir >= 0)
+                    if (vdir >= F64.C0)
                     {
                         hit = new RayHit();
                         return false;
                     }
                     hit.T = hit.T - vw / vdir;
-                    if (hit.T > 1)
+                    if (hit.T > F64.C1)
                     {
                         //If we've gone beyond where the ray can reach, there's obviously no hit.
                         hit = new RayHit();
@@ -384,7 +385,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
         ///<param name="maximumLength">Maximum length of the ray in units of the ray direction's length.</param>
         ///<param name="hit">Hit data of the sphere cast, if any.</param>
         ///<returns>Whether or not the sphere cast hit the shape.</returns>
-        public static bool SphereCast(Ray ray, float radius, ConvexShape shape, ref RigidTransform shapeTransform, float maximumLength,
+        public static bool SphereCast(Ray ray, Fix64 radius, ConvexShape shape, ref RigidTransform shapeTransform, Fix64 maximumLength,
                                    out RayHit hit)
         {
             //Transform the ray into the object's local space.
@@ -395,14 +396,14 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
             Quaternion.Transform(ref ray.Direction, ref conjugate, out ray.Direction);
 
             Vector3 w, p;
-            hit.T = 0;
+            hit.T = F64.C0;
             hit.Location = ray.Position;
             hit.Normal = Toolbox.ZeroVector;
             Vector3 v = hit.Location;
 
             RaySimplex simplex = new RaySimplex();
 
-            float vw, vdir;
+            Fix64 vw, vdir;
             int count = 0;
 
             //This epsilon has a significant impact on performance and accuracy.  Changing it to use BigEpsilon instead increases speed by around 30-40% usually, but jigging is more evident.
@@ -422,11 +423,11 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
 
                 Vector3.Subtract(ref hit.Location, ref p, out w);
                 Vector3.Dot(ref v, ref w, out vw);
-                if (vw > 0)
+                if (vw > F64.C0)
                 {
                     Vector3.Dot(ref v, ref ray.Direction, out vdir);
                     hit.T = hit.T - vw / vdir;
-                    if (vdir >= 0)
+                    if (vdir >= F64.C0)
                     {
                         //We would have to back up!
                         return false;
@@ -467,19 +468,19 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
         ///<param name="maximumLength">Maximum length of the ray in units of the ray direction's length.</param>
         ///<param name="hit">Hit data of the sphere cast, if any.</param>
         ///<returns>Whether or not the sphere cast hit the shape.</returns>
-        public static bool CCDSphereCast(Ray ray, float radius, ConvexShape target, ref RigidTransform shapeTransform, float maximumLength,
+        public static bool CCDSphereCast(Ray ray, Fix64 radius, ConvexShape target, ref RigidTransform shapeTransform, Fix64 maximumLength,
                                    out RayHit hit)
         {
             int iterations = 0;
             while (true)
             {
                 if (GJKToolbox.SphereCast(ray, radius, target, ref shapeTransform, maximumLength, out hit) &&
-                    hit.T > 0)
+                    hit.T > F64.C0)
                 {
                     //The ray cast isn't embedded in the shape, and it's less than maximum length away!
                     return true;
                 }
-                if (hit.T > maximumLength || hit.T < 0)
+                if (hit.T > maximumLength || hit.T < F64.C0)
                     return false; //Failure showed it was too far, or behind.
 
                 radius *= MotionSettings.CoreShapeScaling;
@@ -487,7 +488,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms.GJK
                 if (iterations > 3) //Limit could be configurable.
                 {
                     //It's iterated too much, let's just do a last ditch attempt using a raycast and hope that can help.
-                    return GJKToolbox.RayCast(ray, target, ref shapeTransform, maximumLength, out hit) && hit.T > 0;
+                    return GJKToolbox.RayCast(ray, target, ref shapeTransform, maximumLength, out hit) && hit.T > F64.C0;
                         
                 }
             }

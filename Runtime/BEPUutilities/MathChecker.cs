@@ -1,4 +1,5 @@
-﻿using System;
+﻿using FixMath.NET;
+using System;
 using System.Diagnostics;
 
 namespace BEPUutilities
@@ -13,9 +14,12 @@ namespace BEPUutilities
         /// </summary>
         /// <param name="f">Value to validate.</param>
         /// <returns>True if the value is invalid, false if it is valid.</returns>
-        private static bool IsInvalid(float f)
+        private static bool IsInvalid(Fix64 f)
         {
-            return float.IsNaN(f) || float.IsInfinity(f);
+			// Fixed-point library does not have NaN or Infinity representation.
+			// We keep this dummy function around for completeness sake
+			// return float.IsNaN(f) || float.IsInfinity(f);
+			return f == Fix64.MaxValue || f == Fix64.MinValue;
         }
 
         /// <summary>
@@ -23,7 +27,7 @@ namespace BEPUutilities
         /// This is only run when the CHECKMATH symbol is defined.
         /// </summary>
         [Conditional("CHECKMATH")]
-        public static void Validate(this float f)
+        public static void Validate(this Fix64 f)
         {
             if (IsInvalid(f))
             {

@@ -3,6 +3,7 @@ using BEPUphysics.EntityStateManagement;
  
 using BEPUphysics.CollisionShapes.ConvexShapes;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUphysics.Entities.Prefabs
 {
@@ -14,7 +15,7 @@ namespace BEPUphysics.Entities.Prefabs
         /// <summary>
         /// Gets or sets the length of the capsule.
         /// </summary>
-        public float Length
+        public Fix64 Length
         {
             get
             {
@@ -29,7 +30,7 @@ namespace BEPUphysics.Entities.Prefabs
         /// <summary>
         /// Gets or sets the radius of the capsule.
         /// </summary>
-        public float Radius
+        public Fix64 Radius
         {
             get
             {
@@ -41,12 +42,12 @@ namespace BEPUphysics.Entities.Prefabs
             }
         }
 
-        private Capsule(float len, float rad)
+        private Capsule(Fix64 len, Fix64 rad)
             : base(new ConvexCollidable<CapsuleShape>(new CapsuleShape(len, rad)))
         {
         }
 
-        private Capsule(float len, float rad, float mass)
+        private Capsule(Fix64 len, Fix64 rad, Fix64 mass)
             : base(new ConvexCollidable<CapsuleShape>(new CapsuleShape(len, rad)), mass)
         {
         }
@@ -60,12 +61,12 @@ namespace BEPUphysics.Entities.Prefabs
         ///<param name="end">Endpoint of the line segment.</param>
         ///<param name="orientation">Orientation of a line that fits the line segment.</param>
         ///<param name="length">Length of the line segment.</param>
-        public static void GetCapsuleInformation(ref Vector3 start, ref Vector3 end, out Quaternion orientation, out float length)
+        public static void GetCapsuleInformation(ref Vector3 start, ref Vector3 end, out Quaternion orientation, out Fix64 length)
         {
             Vector3 segmentDirection;
             Vector3.Subtract(ref end, ref start, out segmentDirection);
             length = segmentDirection.Length();
-            if (length > 0)
+            if (length > F64.C0)
             {
                 Vector3.Divide(ref segmentDirection, length, out segmentDirection);
                 Quaternion.GetQuaternionBetweenNormalizedVectors(ref Toolbox.UpVector, ref segmentDirection, out orientation);
@@ -80,16 +81,16 @@ namespace BEPUphysics.Entities.Prefabs
         ///<param name="start">Line segment start point.</param>
         ///<param name="end">Line segment end point.</param>
         ///<param name="radius">Radius of the capsule to expand the line segment by.</param>
-        public Capsule(Vector3 start, Vector3 end, float radius)
+        public Capsule(Vector3 start, Vector3 end, Fix64 radius)
             : this((end - start).Length(), radius)
         {
-            float length;
+            Fix64 length;
             Quaternion orientation;
             GetCapsuleInformation(ref start, ref end, out orientation, out length);
             this.Orientation = orientation;
             Vector3 position;
             Vector3.Add(ref start, ref end, out position);
-            Vector3.Multiply(ref position, .5f, out position);
+            Vector3.Multiply(ref position, F64.C0p5, out position);
             this.Position = position;
         }
 
@@ -101,16 +102,16 @@ namespace BEPUphysics.Entities.Prefabs
         ///<param name="end">Line segment end point.</param>
         ///<param name="radius">Radius of the capsule to expand the line segment by.</param>
         /// <param name="mass">Mass of the entity.</param>
-        public Capsule(Vector3 start, Vector3 end, float radius, float mass)
+        public Capsule(Vector3 start, Vector3 end, Fix64 radius, Fix64 mass)
             : this((end - start).Length(), radius, mass)
         {
-            float length;
+            Fix64 length;
             Quaternion orientation;
             GetCapsuleInformation(ref start, ref end, out orientation, out length);
             this.Orientation = orientation;
             Vector3 position;
             Vector3.Add(ref start, ref end, out position);
-            Vector3.Multiply(ref position, .5f, out position);
+            Vector3.Multiply(ref position, F64.C0p5, out position);
             this.Position = position;
         }
 
@@ -121,7 +122,7 @@ namespace BEPUphysics.Entities.Prefabs
         /// <param name="length">Length of the capsule.</param>
         /// <param name="radius">Radius of the capsule.</param>
         /// <param name="mass">Mass of the object.</param>
-        public Capsule(Vector3 position, float length, float radius, float mass)
+        public Capsule(Vector3 position, Fix64 length, Fix64 radius, Fix64 mass)
             : this(length, radius, mass)
         {
             Position = position;
@@ -133,7 +134,7 @@ namespace BEPUphysics.Entities.Prefabs
         /// <param name="position">Position of the capsule.</param>
         /// <param name="length">Length of the capsule.</param>
         /// <param name="radius">Radius of the capsule.</param>
-        public Capsule(Vector3 position, float length, float radius)
+        public Capsule(Vector3 position, Fix64 length, Fix64 radius)
             : this(length, radius)
         {
             Position = position;
@@ -146,7 +147,7 @@ namespace BEPUphysics.Entities.Prefabs
         /// <param name="length">Length of the capsule.</param>
         /// <param name="radius">Radius of the capsule.</param>
         /// <param name="mass">Mass of the object.</param>
-        public Capsule(MotionState motionState, float length, float radius, float mass)
+        public Capsule(MotionState motionState, Fix64 length, Fix64 radius, Fix64 mass)
             : this(length, radius, mass)
         {
             MotionState = motionState;
@@ -158,7 +159,7 @@ namespace BEPUphysics.Entities.Prefabs
         /// <param name="motionState">Motion state specifying the entity's initial state.</param>
         /// <param name="length">Length of the capsule.</param>
         /// <param name="radius">Radius of the capsule.</param>
-        public Capsule(MotionState motionState, float length, float radius)
+        public Capsule(MotionState motionState, Fix64 length, Fix64 radius)
             : this(length, radius)
         {
             MotionState = motionState;

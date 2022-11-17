@@ -5,6 +5,7 @@ using BEPUphysics.NarrowPhaseSystems.Pairs;
 using BEPUphysics.Entities;
 using BEPUphysics.CollisionRuleManagement;
 using BEPUphysics.BroadPhaseEntries;
+using FixMath.NET;
 
 namespace BEPUphysics.Settings
 {
@@ -19,7 +20,7 @@ namespace BEPUphysics.Settings
         /// to perform CCD are, and more collisions are missed.
         /// Defaults to .8f.
         ///</summary>
-        public static float CoreShapeScaling
+        public static Fix64 CoreShapeScaling
         {
             get
             {
@@ -28,10 +29,10 @@ namespace BEPUphysics.Settings
             set
             {
                 //The reason why it doesn't allow up to 1.0 is there exist systems that require a small margin between the full minimum radius and the core shape.
-                coreShapeScaling = MathHelper.Clamp(value, 0, .99f);
+                coreShapeScaling = MathHelper.Clamp(value, F64.C0, F64.C0p99);
             }
         }
-        static float coreShapeScaling = .8f;
+        static Fix64 coreShapeScaling = (Fix64).8m;
         /// <summary>
         /// The default position updating mode used by position updateables.
         /// Defaults to Discrete.

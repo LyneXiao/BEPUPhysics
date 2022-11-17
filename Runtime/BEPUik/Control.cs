@@ -1,4 +1,6 @@
-﻿namespace BEPUik
+﻿using FixMath.NET;
+
+namespace BEPUik
 {
     /// <summary>
     /// Constrains an individual bone in an attempt to reach some goal.
@@ -12,7 +14,7 @@
         /// </summary>
         public abstract Bone TargetBone { get; set; }
 
-        protected internal abstract void Preupdate(float dt, float updateRate);
+        protected internal abstract void Preupdate(Fix64 dt, Fix64 updateRate);
 
         protected internal abstract void UpdateJacobiansAndVelocityBias();
 
@@ -24,6 +26,6 @@
 
         protected internal abstract void ClearAccumulatedImpulses();
 
-        public abstract float MaximumForce { get; set; }
+        public abstract Fix64 MaximumForce { get; set; }
     }
 }

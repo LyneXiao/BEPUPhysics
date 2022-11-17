@@ -3,6 +3,7 @@ using BEPUphysics.CollisionShapes.ConvexShapes;
  
 using BEPUphysics.Settings;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUphysics.CollisionTests.CollisionAlgorithms
 {
@@ -24,10 +25,10 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
         {
             contact = new ContactData();
 
-            float radiusSum = a.collisionMargin + b.collisionMargin;
+            Fix64 radiusSum = a.collisionMargin + b.collisionMargin;
             Vector3 centerDifference;
             Vector3.Subtract(ref positionB, ref positionA, out centerDifference);
-            float centerDistance = centerDifference.LengthSquared();
+            Fix64 centerDistance = centerDifference.LengthSquared();
 
             if (centerDistance < (radiusSum + CollisionDetectionSettings.maximumContactDistance) * (radiusSum + CollisionDetectionSettings.maximumContactDistance))
             {
@@ -38,7 +39,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
                 else contact.Position = new Vector3();
                 Vector3.Add(ref contact.Position, ref positionA, out contact.Position);
 
-                centerDistance = (float)Math.Sqrt(centerDistance);
+                centerDistance = Fix64.Sqrt(centerDistance);
                 if (centerDistance > Toolbox.BigEpsilon)
                 {
                     Vector3.Divide(ref centerDifference, centerDistance, out contact.Normal);

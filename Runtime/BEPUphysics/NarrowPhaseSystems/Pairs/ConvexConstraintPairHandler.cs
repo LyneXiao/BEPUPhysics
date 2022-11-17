@@ -11,6 +11,7 @@ using BEPUphysics.Settings;
 
 using BEPUphysics.CollisionShapes.ConvexShapes;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -39,8 +40,8 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
         {
             info.Contact = ContactManifold.contacts.Elements[index];
             //Find the contact's normal force.
-            float totalNormalImpulse = 0;
-            info.NormalImpulse = 0;
+            Fix64 totalNormalImpulse = F64.C0;
+            info.NormalImpulse = F64.C0;
             for (int i = 0; i < contactConstraint.penetrationConstraints.Count; i++)
             {
                 totalNormalImpulse += contactConstraint.penetrationConstraints.Elements[i].accumulatedImpulse;
@@ -50,12 +51,12 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
                 }
             }
             //Compute friction force.  Since we are using central friction, this is 'faked.'
-            float radius;
+            Fix64 radius;
             Vector3.Distance(ref contactConstraint.slidingFriction.manifoldCenter, ref info.Contact.Position, out radius);
-            if (totalNormalImpulse > 0)
+            if (totalNormalImpulse > F64.C0)
                 info.FrictionImpulse = (info.NormalImpulse / totalNormalImpulse) * (contactConstraint.slidingFriction.accumulatedImpulse.Length() + contactConstraint.twistFriction.accumulatedImpulse * radius);
             else
-                info.FrictionImpulse = 0;
+                info.FrictionImpulse = F64.C0;
             //Compute relative velocity
             Vector3 velocity;
             //If the pair is handling some type of query and does not actually have supporting entities, then consider the velocity contribution to be zero.

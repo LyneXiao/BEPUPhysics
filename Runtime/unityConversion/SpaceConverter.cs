@@ -5,6 +5,7 @@ using BEPUphysics.CollisionShapes;
 using BEPUphysics.Entities.Prefabs;
 using BEPUphysics.Materials;
 using BEPUutilities;
+using FixMath.NET;
 using UnityEngine;
 using Quaternion = UnityEngine.Quaternion;
 using Space = BEPUphysics.Space;
@@ -219,7 +220,7 @@ namespace UnityConversion
         {
             MathConverter.Convert(in position, out var bepuPosition);
             MathConverter.Convert(in quaternion, out var bepuQuaternion);
-            var box = new Box(bepuPosition, (float) width, (float) height, (float) length);
+            var box = new Box(bepuPosition, (Fix64) width, (Fix64) height, (Fix64) length);
             box.Orientation = bepuQuaternion;
             space.Add(box);
             return box;
@@ -257,7 +258,7 @@ namespace UnityConversion
         {
             MathConverter.Convert(in position, out var bepuPosition);
             MathConverter.Convert(in quaternion, out var bepuQuaternion);
-            var sphere = new Sphere(bepuPosition, (float) radius);
+            var sphere = new Sphere(bepuPosition, (Fix64) radius);
             sphere.Orientation = bepuQuaternion;
             space.Add(sphere);
             return sphere;
@@ -330,7 +331,7 @@ namespace UnityConversion
         {
             MathConverter.Convert(in position, out var bepuPosition);
             MathConverter.Convert(in quaternion, out var bepuQuaternion);
-            var capsule = new Capsule(bepuPosition, (float) height, (float) radius);
+            var capsule = new Capsule(bepuPosition, (Fix64) height, (Fix64) radius);
             capsule.Orientation = bepuQuaternion;
             space.Add(capsule);
             return capsule;
@@ -381,7 +382,7 @@ namespace UnityConversion
 
             MathConverter.Convert(in localPosition, out var bepuPoisiton);
             MathConverter.Convert(in localRotation, out var bepuQuaternion);
-            var mesh = new MobileMesh(bepuVertices, indices, new AffineTransform(bepuQuaternion, bepuPoisiton), solidity, (float) mass);
+            var mesh = new MobileMesh(bepuVertices, indices, new AffineTransform(bepuQuaternion, bepuPoisiton), solidity, (Fix64) mass);
             space.Add(mesh);
             return mesh;
         }
@@ -415,7 +416,7 @@ namespace UnityConversion
         {
             MathConverter.Convert(in position, out var bepuPosition);
             MathConverter.Convert(in quaternion, out var bepuQuaternion);
-            var box = new Box(bepuPosition, (float) width, (float) height, (float) length, (float) mass);
+            var box = new Box(bepuPosition, (Fix64) width, (Fix64) height, (Fix64) length, (Fix64) mass);
             box.Orientation = bepuQuaternion;
             space.Add(box);
             return box;
@@ -439,7 +440,7 @@ namespace UnityConversion
         {
             MathConverter.Convert(in position, out var bepuPosition);
             MathConverter.Convert(in quaternion, out var bepuQuaternion);
-            var sphere = new Sphere(bepuPosition, (float) radius, (float) mass);
+            var sphere = new Sphere(bepuPosition, (Fix64) radius, (Fix64) mass);
             sphere.Orientation = bepuQuaternion;
             space.Add(sphere);
             return sphere;
@@ -488,7 +489,7 @@ namespace UnityConversion
         {
             MathConverter.Convert(in position, out var bepuPosition);
             MathConverter.Convert(in quaternion, out var bepuQuaternion);
-            var capsule = new Capsule(bepuPosition, (float) height, (float) radius, (float) mass);
+            var capsule = new Capsule(bepuPosition, (Fix64) height, (Fix64) radius, (Fix64) mass);
             capsule.Orientation = bepuQuaternion;
             space.Add(capsule);
             return capsule;
@@ -501,8 +502,8 @@ namespace UnityConversion
             return list;
         }
         
-        private static readonly BEPUutilities.Vector3 MinPoint = new BEPUutilities.Vector3(float.MinValue, float.MinValue, float.MinValue);
-        private static readonly BEPUutilities.Vector3 MaxPoint = new BEPUutilities.Vector3(float.MaxValue, float.MaxValue, float.MaxValue);
+        private static readonly BEPUutilities.Vector3 MinPoint = new BEPUutilities.Vector3(Fix64.MinValue, Fix64.MinValue, Fix64.MinValue);
+        private static readonly BEPUutilities.Vector3 MaxPoint = new BEPUutilities.Vector3(Fix64.MaxValue, Fix64.MaxValue, Fix64.MaxValue);
         private static readonly BoundingBox FullArea = new BoundingBox(MinPoint, MaxPoint);
         public static List<BroadPhaseEntry> GetEntries(this Space space)
         {

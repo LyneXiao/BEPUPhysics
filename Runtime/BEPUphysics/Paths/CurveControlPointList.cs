@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿using FixMath.NET;
+using System.Collections;
 using System.Collections.Generic;
 
 namespace BEPUphysics.Paths
@@ -81,7 +82,7 @@ namespace BEPUphysics.Paths
         /// <param name="time">Time of the new control point.</param>
         /// <param name="value">Value of the new control point.</param>
         /// <returns>Newly created control point.</returns>
-        public CurveControlPoint<TValue> Add(float time, TValue value)
+        public CurveControlPoint<TValue> Add(Fix64 time, TValue value)
         {
             var toAdd = new CurveControlPoint<TValue>(time, value, Curve);
             Add(toAdd);

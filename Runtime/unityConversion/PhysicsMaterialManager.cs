@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using BEPUphysics.Materials;
+using FixMath.NET;
 using UnityEngine;
 using Material = BEPUphysics.Materials.Material;
 
@@ -8,16 +9,16 @@ namespace UnityConversion
 {
     public class PhysicsMaterialManager: MonoBehaviour
     {
-        private static readonly float Half = (float) 0.5m;
+        private static readonly Fix64 Half = (Fix64) 0.5m;
         
         private static readonly Dictionary<string, Material> _materials = new Dictionary<string, Material>();
 
-        private static float Max(in float a, in float b)
+        private static Fix64 Max(in Fix64 a, in Fix64 b)
         {
             return a > b ? a : b;
         }
         
-        private static float Min(in float a, in float b)
+        private static Fix64 Min(in Fix64 a, in Fix64 b)
         {
             return a < b ? a : b;
         }
@@ -34,7 +35,7 @@ namespace UnityConversion
             var key = GetMaterialKey(material);
             if (!_materials.TryGetValue(key, out result))
             {
-                result = new Material((float)material.staticFriction, (float)material.dynamicFriction, (float)material.bounciness);
+                result = new Material((Fix64)material.staticFriction, (Fix64)material.dynamicFriction, (Fix64)material.bounciness);
                 _materials.Add(key, result);
             }
             
@@ -48,9 +49,9 @@ namespace UnityConversion
             MaterialManager.MaterialInteractions[pair] = delegate(Material material, Material material1,
                 out InteractionProperties properties)
             {
-                float kineticFriction;
-                float staticFriction;
-                float bounciness;
+                Fix64 kineticFriction;
+                Fix64 staticFriction;
+                Fix64 bounciness;
 
                 switch (frictionCombine)
                 {

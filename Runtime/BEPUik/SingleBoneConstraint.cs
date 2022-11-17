@@ -1,5 +1,6 @@
 ﻿using System;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUik
 {
@@ -41,11 +42,11 @@ namespace BEPUik
 
             //Incorporate the constraint softness into the effective mass denominator. This pushes the matrix away from singularity.
             //Softness will also be incorporated into the velocity solve iterations to complete the implementation.
-            if (effectiveMass.M11 != 0)
+            if (effectiveMass.M11 != F64.C0)
                 effectiveMass.M11 += softness;
-            if (effectiveMass.M22 != 0)
+            if (effectiveMass.M22 != F64.C0)
                 effectiveMass.M22 += softness;
-            if (effectiveMass.M33 != 0)
+            if (effectiveMass.M33 != F64.C0)
                 effectiveMass.M33 += softness;
 
             //Invert! Takes us from J * M^-1 * JT to 1 / (J * M^-1 * JT).
@@ -98,12 +99,12 @@ namespace BEPUik
             //Add the constraint space impulse to the accumulated impulse so that warm starting and softness work properly.
             Vector3 preadd = accumulatedImpulse;
             Vector3.Add(ref constraintSpaceImpulse, ref accumulatedImpulse, out accumulatedImpulse);
-            //But wait! The accumulated impulse may exceed this constraint's capacity! Check to make sure!
-            float impulseSquared = accumulatedImpulse.LengthSquared();
+			//But wait! The accumulated impulse may exceed this constraint's capacity! Check to make sure!
+			Fix64 impulseSquared = accumulatedImpulse.LengthSquared();
             if (impulseSquared > maximumImpulseSquared)
             {
                 //Oops! Clamp that down.
-                Vector3.Multiply(ref accumulatedImpulse, maximumImpulse / (float)Math.Sqrt(impulseSquared), out accumulatedImpulse);
+                Vector3.Multiply(ref accumulatedImpulse, maximumImpulse / Fix64.Sqrt(impulseSquared), out accumulatedImpulse);
                 //Update the impulse based upon the clamped accumulated impulse and the original, pre-add accumulated impulse.
                 Vector3.Subtract(ref accumulatedImpulse, ref preadd, out constraintSpaceImpulse);
             }

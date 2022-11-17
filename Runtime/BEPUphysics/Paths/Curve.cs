@@ -1,5 +1,6 @@
 ﻿using System;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUphysics.Paths
 {
@@ -42,19 +43,19 @@ namespace BEPUphysics.Paths
         /// <param name="preLoop">Looping behavior of the curve before the first endpoint's time.</param>
         /// <param name="postLoop">Looping behavior of the curve after the last endpoint's time.</param>
         /// <returns>Time within the curve's interval.</returns>
-        public static double ModifyTime(double time, double intervalBegin, double intervalEnd, CurveEndpointBehavior preLoop, CurveEndpointBehavior postLoop)
+        public static Fix64 ModifyTime(Fix64 time, Fix64 intervalBegin, Fix64 intervalEnd, CurveEndpointBehavior preLoop, CurveEndpointBehavior postLoop)
         {
             if (time < intervalBegin)
             {
                 switch (preLoop)
                 {
                     case CurveEndpointBehavior.Wrap:
-                        double modifiedTime = time - intervalBegin;
-                        double intervalLength = intervalEnd - intervalBegin;
+                        Fix64 modifiedTime = time - intervalBegin;
+                        Fix64 intervalLength = intervalEnd - intervalBegin;
                         modifiedTime %= intervalLength;
                         return intervalEnd + modifiedTime;
                     case CurveEndpointBehavior.Clamp:
-                        return Math.Max(intervalBegin, time);
+                        return MathHelper.Max(intervalBegin, time);
                     case CurveEndpointBehavior.Mirror:
                         modifiedTime = time - intervalBegin;
                         intervalLength = intervalEnd - intervalBegin;
@@ -69,12 +70,12 @@ namespace BEPUphysics.Paths
                 switch (postLoop)
                 {
                     case CurveEndpointBehavior.Wrap:
-                        double modifiedTime = time - intervalEnd;
-                        double intervalLength = intervalEnd - intervalBegin;
+                        Fix64 modifiedTime = time - intervalEnd;
+                        Fix64 intervalLength = intervalEnd - intervalBegin;
                         modifiedTime %= intervalLength;
                         return intervalBegin + modifiedTime;
                     case CurveEndpointBehavior.Clamp:
-                        return Math.Min(intervalEnd, time);
+                        return MathHelper.Min(intervalEnd, time);
                     case CurveEndpointBehavior.Mirror:
                         modifiedTime = time - intervalEnd;
                         intervalLength = intervalEnd - intervalBegin;
@@ -94,7 +95,7 @@ namespace BEPUphysics.Paths
         /// <param name="controlPointIndex">Index of the starting control point of the subinterval.</param>
         /// <param name="weight">Location to evaluate on the subinterval from 0 to 1.</param>
         /// <param name="value">Value at the given location.</param>
-        public abstract void Evaluate(int controlPointIndex, float weight, out TValue value);
+        public abstract void Evaluate(int controlPointIndex, Fix64 weight, out TValue value);
 
         /// <summary>
         /// Gets the curve's bounding index information.
@@ -108,9 +109,9 @@ namespace BEPUphysics.Paths
         /// </summary>
         /// <param name="time">Time at which to evaluate the curve.</param>
         /// <param name="value">Curve value at the given time.</param>
-        public override void Evaluate(double time, out TValue value)
+        public override void Evaluate(Fix64 time, out TValue value)
         {
-            double firstTime, lastTime;
+            Fix64 firstTime, lastTime;
             int minIndex, maxIndex;
             GetCurveBoundsInformation(out firstTime, out lastTime, out minIndex, out maxIndex);
             if (minIndex < 0 || maxIndex < 0)
@@ -134,18 +135,18 @@ namespace BEPUphysics.Paths
             {
                 //Somehow the index is the very last index, so next index would be invalid.
                 //Just 'clamp' it.
-                //This generally implies a bug, but it might also just be some very close floating point issue.
+                //This generally implies a bug, but it might also just be some very close Fix64ing point issue.
                 value = ControlPoints[maxIndex].Value;
             }
             else
             {
                 var denominator = ControlPoints[index + 1].Time - ControlPoints[index].Time;
 
-                float intervalTime;
+                Fix64 intervalTime;
                 if (denominator < Toolbox.Epsilon)
-                    intervalTime = 0;
+                    intervalTime = F64.C0;
                 else
-                    intervalTime = (float) ((time - ControlPoints[index].Time) / denominator);
+                    intervalTime = (time - ControlPoints[index].Time) / denominator;
 
 
                 Evaluate(index, intervalTime, out value);
@@ -157,7 +158,7 @@ namespace BEPUphysics.Paths
         /// </summary>
         /// <param name="startingTime">Beginning time of the path.</param>
         /// <param name="endingTime">Ending time of the path.</param>
-        public override void GetPathBoundsInformation(out double startingTime, out double endingTime)
+        public override void GetPathBoundsInformation(out Fix64 startingTime, out Fix64 endingTime)
         {
             int minIndex;
             int maxIndex;
@@ -172,7 +173,7 @@ namespace BEPUphysics.Paths
         /// <param name="lastIndexTime">Time of the last index.</param>
         /// <param name="minIndex">First index in the reachable curve.</param>
         /// <param name="maxIndex">Last index in the reachable curve.</param>
-        public void GetCurveBoundsInformation(out double firstIndexTime, out double lastIndexTime, out int minIndex, out int maxIndex)
+        public void GetCurveBoundsInformation(out Fix64 firstIndexTime, out Fix64 lastIndexTime, out int minIndex, out int maxIndex)
         {
             GetCurveIndexBoundsInformation(out minIndex, out maxIndex);
             if (minIndex >= 0 && maxIndex < ControlPoints.Count && minIndex <= maxIndex)
@@ -182,8 +183,8 @@ namespace BEPUphysics.Paths
             }
             else
             {
-                firstIndexTime = 0;
-                lastIndexTime = 0;
+                firstIndexTime = F64.C0;
+                lastIndexTime = F64.C0;
             }
         }
 
@@ -194,7 +195,7 @@ namespace BEPUphysics.Paths
         /// </summary>
         /// <param name="time">Time to index.</param>
         /// <returns>Index prior to or equal to the given time.</returns>
-        public int GetPreviousIndex(double time)
+        public int GetPreviousIndex(Fix64 time)
         {
             int indexMin = 0;
             int indexMax = ControlPoints.Count;

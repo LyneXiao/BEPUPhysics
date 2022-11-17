@@ -6,6 +6,7 @@ using BEPUutilities.ResourceManagement;
 using BEPUphysics.CollisionShapes.ConvexShapes;
 using BEPUutilities;
 using BEPUutilities.DataStructures;
+using FixMath.NET;
 
 namespace BEPUphysics.CollisionTests.Manifolds
 {
@@ -53,11 +54,11 @@ namespace BEPUphysics.CollisionTests.Manifolds
         /// Updates the manifold.
         ///</summary>
         ///<param name="dt">Timestep duration.</param>
-        public override void Update(float dt)
+        public override void Update(Fix64 dt)
         {
 
             //Now, generate a contact between the two shapes.
-            float distance;
+            Fix64 distance;
             Vector3 axis;
             BoxContactDataCache manifold;
             if (BoxBoxCollider.AreBoxesColliding(boxA.Shape, boxB.Shape, ref boxA.worldTransform, ref boxB.worldTransform, out distance, out axis, out manifold))
@@ -122,11 +123,11 @@ namespace BEPUphysics.CollisionTests.Manifolds
             }
         }
 #else
-        public override void Update(float dt)
+        public override void Update(Fix64 dt)
         {
 
             //Now, generate a contact between the two shapes.
-            float distance;
+            Fix64 distance;
             Vector3 axis;
             var manifold = new TinyStructList<BoxContactData>();
             if (BoxBoxCollider.AreBoxesColliding(boxA.Shape, boxB.Shape, ref boxA.worldTransform, ref boxB.worldTransform, out distance, out axis, out manifold))

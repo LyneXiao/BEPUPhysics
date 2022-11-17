@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using BEPUutilities.DataStructures;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUutilities.ResourceManagement
 {
@@ -17,8 +18,8 @@ namespace BEPUutilities.ResourceManagement
         public static void ResetPools()
         {
             SubPoolIntList = new LockingResourcePool<RawList<int>>();
-            SubPoolIntSet = new LockingResourcePool<HashSet<int>>();
-            SubPoolFloatList = new LockingResourcePool<RawList<float>>();
+            SubPoolIntSet = new LockingResourcePool<DataStructures.HashSet<int>>();
+            SubPoolFloatList = new LockingResourcePool<RawList<Fix64>>();
             SubPoolVectorList = new LockingResourcePool<RawList<Vector3>>();
             SubPoolRayHitList = new LockingResourcePool<RawList<RayHit>>();
 
@@ -26,8 +27,8 @@ namespace BEPUutilities.ResourceManagement
 
         static LockingResourcePool<RawList<RayHit>> SubPoolRayHitList;
         static LockingResourcePool<RawList<int>> SubPoolIntList;
-        static LockingResourcePool<HashSet<int>> SubPoolIntSet;
-        static LockingResourcePool<RawList<float>> SubPoolFloatList;
+        static LockingResourcePool<DataStructures.HashSet<int>> SubPoolIntSet;
+        static LockingResourcePool<RawList<Fix64>> SubPoolFloatList;
         static LockingResourcePool<RawList<Vector3>> SubPoolVectorList;
 
         /// <summary>
@@ -74,7 +75,7 @@ namespace BEPUutilities.ResourceManagement
         /// Retrieves a int hash set from the resource pool.
         /// </summary>
         /// <returns>Empty int set.</returns>
-        public static HashSet<int> GetIntSet()
+        public static DataStructures.HashSet<int> GetIntSet()
         {
             return SubPoolIntSet.Take();
         }
@@ -83,7 +84,7 @@ namespace BEPUutilities.ResourceManagement
         /// Returns a resource to the pool.
         /// </summary>
         /// <param name="set">Set to return.</param>
-        public static void GiveBack(HashSet<int> set)
+        public static void GiveBack(DataStructures.HashSet<int> set)
         {
             set.Clear();
             SubPoolIntSet.GiveBack(set);
@@ -93,7 +94,7 @@ namespace BEPUutilities.ResourceManagement
         /// Retrieves a float list from the resource pool.
         /// </summary>
         /// <returns>Empty float list.</returns>
-        public static RawList<float> GetFloatList()
+        public static RawList<Fix64> GetFloatList()
         {
             return SubPoolFloatList.Take();
         }
@@ -102,7 +103,7 @@ namespace BEPUutilities.ResourceManagement
         /// Returns a resource to the pool.
         /// </summary>
         /// <param name="list">List to return.</param>
-        public static void GiveBack(RawList<float> list)
+        public static void GiveBack(RawList<Fix64> list)
         {
             list.Clear();
             SubPoolFloatList.GiveBack(list);

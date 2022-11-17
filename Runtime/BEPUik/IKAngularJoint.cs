@@ -1,4 +1,5 @@
 ﻿using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUik
 {
@@ -31,7 +32,7 @@ namespace BEPUik
         protected internal override void UpdateJacobiansAndVelocityBias()
         {
             linearJacobianA = linearJacobianB = new Matrix3x3();
-            angularJacobianA = new Matrix3x3 { M11 = 1, M22 = 1, M33 = 1 };
+            angularJacobianA = new Matrix3x3 { M11 = F64.C1, M22 = F64.C1, M33 = F64.C1 };
             angularJacobianB = new Matrix3x3 { M11 = -1, M22 = -1, M33 = -1 };
 
             //The error is computed using this equation:
@@ -50,7 +51,7 @@ namespace BEPUik
             Quaternion.Concatenate(ref bTargetConjugate, ref ConnectionB.Orientation, out error);
 
             //Convert the error into an axis-angle vector usable for bias velocity.
-            float angle;
+            Fix64 angle;
             Vector3 axis;
             Quaternion.GetAxisAngleFromQuaternion(ref error, out axis, out angle);
 

@@ -6,6 +6,7 @@ using BEPUphysics.CollisionTests.CollisionAlgorithms;
 using BEPUphysics.OtherSpaceStages;
 using BEPUutilities.DataStructures;
 using BEPUutilities.ResourceManagement;
+using FixMath.NET;
 
 namespace BEPUphysics.BroadPhaseEntries
 {
@@ -58,7 +59,7 @@ namespace BEPUphysics.BroadPhaseEntries
                 Matrix3x3.AdjugateTranspose(ref worldTransform.LinearTransform, out normalTransform);
 
                 //If the world 'up' doesn't match the normal 'up', some reflection occurred which requires a winding flip.
-                if (Vector3.Dot(normalTransform.Up, worldTransform.LinearTransform.Up) < 0)
+                if (Vector3.Dot(normalTransform.Up, worldTransform.LinearTransform.Up) < F64.C0)
                 {
                     sidedness = TriangleSidedness.Clockwise;
                 }
@@ -124,12 +125,12 @@ namespace BEPUphysics.BroadPhaseEntries
         }
 
 
-        internal float thickness;
+        internal Fix64 thickness;
         /// <summary>
         /// Gets or sets the thickness of the terrain.  This defines how far below the triangles of the terrain's surface the terrain 'body' extends.
         /// Anything within the body of the terrain will be pulled back up to the surface.
         /// </summary>
-        public float Thickness
+        public Fix64 Thickness
         {
             get
             {
@@ -137,7 +138,7 @@ namespace BEPUphysics.BroadPhaseEntries
             }
             set
             {
-                if (value < 0)
+                if (value < F64.C0)
                     throw new ArgumentException("Cannot use a negative thickness value.");
 
                 //Modify the bounding box to include the new thickness.
@@ -146,15 +147,15 @@ namespace BEPUphysics.BroadPhaseEntries
                 //Use the down direction rather than the thicknessOffset to determine which
                 //component of the bounding box to subtract, since the down direction contains all
                 //previous extra thickness.
-                if (down.X < 0)
+                if (down.X < F64.C0)
                     boundingBox.Min.X += thicknessOffset.X;
                 else
                     boundingBox.Max.X += thicknessOffset.X;
-                if (down.Y < 0)
+                if (down.Y < F64.C0)
                     boundingBox.Min.Y += thicknessOffset.Y;
                 else
                     boundingBox.Max.Y += thicknessOffset.Y;
-                if (down.Z < 0)
+                if (down.Z < F64.C0)
                     boundingBox.Min.Z += thicknessOffset.Z;
                 else
                     boundingBox.Max.Z += thicknessOffset.Z;
@@ -183,7 +184,7 @@ namespace BEPUphysics.BroadPhaseEntries
         ///</summary>
         ///<param name="heights">Height data to use to create the TerrainShape.</param>
         ///<param name="worldTransform">Transform to use for the terrain.</param>
-        public Terrain(float[,] heights, AffineTransform worldTransform)
+        public Terrain(Fix64[,] heights, AffineTransform worldTransform)
             : this(new TerrainShape(heights), worldTransform)
         {
         }
@@ -197,15 +198,15 @@ namespace BEPUphysics.BroadPhaseEntries
             Shape.GetBoundingBox(ref worldTransform, out boundingBox);
             //Include the thickness of the terrain.
             Vector3 thicknessOffset = Vector3.Normalize(worldTransform.LinearTransform.Down) * thickness;
-            if (thicknessOffset.X < 0)
+            if (thicknessOffset.X < F64.C0)
                 boundingBox.Min.X += thicknessOffset.X;
             else
                 boundingBox.Max.X += thicknessOffset.X;
-            if (thicknessOffset.Y < 0)
+            if (thicknessOffset.Y < F64.C0)
                 boundingBox.Min.Y += thicknessOffset.Y;
             else
                 boundingBox.Max.Y += thicknessOffset.Y;
-            if (thicknessOffset.Z < 0)
+            if (thicknessOffset.Z < F64.C0)
                 boundingBox.Min.Z += thicknessOffset.Z;
             else
                 boundingBox.Max.Z += thicknessOffset.Z;
@@ -220,7 +221,7 @@ namespace BEPUphysics.BroadPhaseEntries
         /// <param name="maximumLength">Maximum length, in units of the ray's direction's length, to test.</param>
         /// <param name="rayHit">Hit location of the ray on the entry, if any.</param>
         /// <returns>Whether or not the ray hit the entry.</returns>
-        public override bool RayCast(Ray ray, float maximumLength, out RayHit rayHit)
+        public override bool RayCast(Ray ray, Fix64 maximumLength, out RayHit rayHit)
         {
             return Shape.RayCast(ref ray, maximumLength, ref worldTransform, out rayHit);
         }
@@ -242,26 +243,26 @@ namespace BEPUphysics.BroadPhaseEntries
             var hitElements = new QuickList<int>(BufferPools<int>.Thread);
             if (Shape.GetOverlaps(localSpaceBoundingBox, ref hitElements))
             {
-                hit.T = float.MaxValue;
+                hit.T = Fix64.MaxValue;
                 for (int i = 0; i < hitElements.Count; i++)
                 {
                     Shape.GetTriangle(hitElements.Elements[i], ref worldTransform, out tri.vA, out tri.vB, out tri.vC);
                     Vector3 center;
                     Vector3.Add(ref tri.vA, ref tri.vB, out center);
                     Vector3.Add(ref center, ref tri.vC, out center);
-                    Vector3.Multiply(ref center, 1f / 3f, out center);
+                    Vector3.Multiply(ref center, F64.OneThird, out center);
                     Vector3.Subtract(ref tri.vA, ref center, out tri.vA);
                     Vector3.Subtract(ref tri.vB, ref center, out tri.vB);
                     Vector3.Subtract(ref tri.vC, ref center, out tri.vC);
                     tri.MaximumRadius = tri.vA.LengthSquared();
-                    float radius = tri.vB.LengthSquared();
+                    Fix64 radius = tri.vB.LengthSquared();
                     if (tri.MaximumRadius < radius)
                         tri.MaximumRadius = radius;
                     radius = tri.vC.LengthSquared();
                     if (tri.MaximumRadius < radius)
                         tri.MaximumRadius = radius;
-                    tri.MaximumRadius = (float)Math.Sqrt(tri.MaximumRadius);
-                    tri.collisionMargin = 0;
+                    tri.MaximumRadius = Fix64.Sqrt(tri.MaximumRadius);
+                    tri.collisionMargin = F64.C0;
                     var triangleTransform = new RigidTransform { Orientation = Quaternion.Identity, Position = center };
                     RayHit tempHit;
                     if (MPRToolbox.Sweep(castShape, tri, ref sweep, ref Toolbox.ZeroVector, ref startingTransform, ref triangleTransform, out tempHit) && tempHit.T < hit.T)
@@ -269,10 +270,10 @@ namespace BEPUphysics.BroadPhaseEntries
                         hit = tempHit;
                     }
                 }
-                tri.MaximumRadius = 0;
+                tri.MaximumRadius = F64.C0;
                 PhysicsThreadResources.GiveBack(tri);
                 hitElements.Dispose();
-                return hit.T != float.MaxValue;
+                return hit.T != Fix64.MaxValue;
             }
             PhysicsThreadResources.GiveBack(tri);
             hitElements.Dispose();

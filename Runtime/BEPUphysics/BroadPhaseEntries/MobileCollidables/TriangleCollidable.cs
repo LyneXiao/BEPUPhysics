@@ -36,7 +36,7 @@ namespace BEPUphysics.BroadPhaseEntries.MobileCollidables
         public void Initialize(ref Vector3 a, ref Vector3 b, ref Vector3 c)
         {
             var shape = Shape;
-            shape.collisionMargin = 0;
+            shape.collisionMargin = F64.C0;
             shape.sidedness = TriangleSidedness.DoubleSided;
             shape.vA = a;
             shape.vB = b;

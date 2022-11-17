@@ -1,6 +1,8 @@
 ﻿
 
 using BEPUutilities;
+using FixMath.NET;
+
 namespace BEPUphysics.Constraints
 {
     /// <summary>
@@ -12,12 +14,12 @@ namespace BEPUphysics.Constraints
         /// Gets the current relative velocity of the constraint.
         /// Computed based on the current connection velocities and jacobians.
         /// </summary>
-        float RelativeVelocity { get; }
+        Fix64 RelativeVelocity { get; }
 
         /// <summary>
         /// Gets the total impulse a constraint has applied.
         /// </summary>
-        float TotalImpulse { get; }
+        Fix64 TotalImpulse { get; }
     }
 
     /// <summary>
@@ -28,7 +30,7 @@ namespace BEPUphysics.Constraints
         /// <summary>
         /// Gets the current constraint error.
         /// </summary>
-        float Error { get; }
+        Fix64 Error { get; }
     }
 
     /// <summary>

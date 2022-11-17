@@ -1,6 +1,6 @@
 ﻿using System;
 using BEPUutilities;
- 
+using FixMath.NET;
 
 namespace BEPUphysics.CollisionTests
 {
@@ -12,7 +12,7 @@ namespace BEPUphysics.CollisionTests
         /// <summary>
         /// Amount of penetration between the two objects.
         /// </summary>
-        public float PenetrationDepth;
+        public Fix64 PenetrationDepth;
 
         /// <summary>
         /// Identifier used to link contact data with existing contacts and categorize members of a manifold.

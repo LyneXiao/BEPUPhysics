@@ -1,5 +1,6 @@
 ﻿using System;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUik
 {
@@ -72,14 +73,14 @@ namespace BEPUik
             set { LocalMeasurementAxisB = Quaternion.Transform(value, Quaternion.Conjugate(ConnectionB.Orientation)); }
         }
 
-        private float maximumAngle;
+        private Fix64 maximumAngle;
         /// <summary>
         /// Gets or sets the maximum angle between the two axes allowed by the constraint.
         /// </summary>
-        public float MaximumAngle
+        public Fix64 MaximumAngle
         {
             get { return maximumAngle; }
-            set { maximumAngle = Math.Max(0, value); }
+            set { maximumAngle = MathHelper.Max(F64.C0, value); }
         }
 
         /// <summary>
@@ -94,10 +95,10 @@ namespace BEPUik
             //Pick an axis perpendicular to axisA to use as the measurement axis.
             Vector3 worldMeasurementAxisA;
             Vector3.Cross(ref Toolbox.UpVector, ref axisA, out worldMeasurementAxisA);
-            float lengthSquared = worldMeasurementAxisA.LengthSquared();
+            Fix64 lengthSquared = worldMeasurementAxisA.LengthSquared();
             if (lengthSquared > Toolbox.Epsilon)
             {
-                Vector3.Divide(ref worldMeasurementAxisA, (float)Math.Sqrt(lengthSquared), out worldMeasurementAxisA);
+                Vector3.Divide(ref worldMeasurementAxisA, Fix64.Sqrt(lengthSquared), out worldMeasurementAxisA);
             }
             else
             {
@@ -126,7 +127,7 @@ namespace BEPUik
         /// <param name="axisA">Axis attached to connectionA in world space.</param>
         /// <param name="axisB">Axis attached to connectionB in world space.</param>
         /// <param name="maximumAngle">Maximum angle allowed between connectionA's axis and connectionB's axis.</param>
-        public IKTwistLimit(Bone connectionA, Bone connectionB, Vector3 axisA, Vector3 axisB, float maximumAngle)
+        public IKTwistLimit(Bone connectionA, Bone connectionB, Vector3 axisA, Vector3 axisB, Fix64 maximumAngle)
             : base(connectionA, connectionB)
         {
             AxisA = axisA;
@@ -159,23 +160,23 @@ namespace BEPUik
             Quaternion.Transform(ref twistMeasureAxisB, ref alignmentRotation, out twistMeasureAxisB);
 
             //We can now compare the angle between the twist axes.
-            float angle;
+            Fix64 angle;
             Vector3.Dot(ref twistMeasureAxisA, ref twistMeasureAxisB, out angle);
-            angle = (float)Math.Acos(MathHelper.Clamp(angle, -1, 1));
+            angle = Fix64.Acos(MathHelper.Clamp(angle, -1, F64.C1));
 
             //Compute the bias based upon the error.
             if (angle > maximumAngle)
-                velocityBias = new Vector3(errorCorrectionFactor * (angle - maximumAngle), 0, 0);
+                velocityBias = new Vector3(errorCorrectionFactor * (angle - maximumAngle), F64.C0, F64.C0);
             else //If the constraint isn't violated, set up the velocity bias to allow a 'speculative' limit.
-                velocityBias = new Vector3(angle - maximumAngle, 0, 0);
+                velocityBias = new Vector3(angle - maximumAngle, F64.C0, F64.C0);
 
             //We can't just use the axes directly as jacobians. Consider 'cranking' one object around the other.
             Vector3 jacobian;
             Vector3.Add(ref axisA, ref axisB, out jacobian);
-            float lengthSquared = jacobian.LengthSquared();
+            Fix64 lengthSquared = jacobian.LengthSquared();
             if (lengthSquared > Toolbox.Epsilon)
             {
-                Vector3.Divide(ref jacobian, (float)Math.Sqrt(lengthSquared), out jacobian);
+                Vector3.Divide(ref jacobian, Fix64.Sqrt(lengthSquared), out jacobian);
             }
             else
             {
@@ -189,10 +190,10 @@ namespace BEPUik
             //One side would end up doing nothing!
             Vector3 cross;
             Vector3.Cross(ref twistMeasureAxisA, ref twistMeasureAxisB, out cross);
-            float limitSide;
+            Fix64 limitSide;
             Vector3.Dot(ref cross, ref axisA, out limitSide);
             //Negate the jacobian based on what side of the limit we're on.
-            if (limitSide < 0)
+            if (limitSide < F64.C0)
                 Vector3.Negate(ref jacobian, out jacobian);
 
             angularJacobianA = new Matrix3x3 { M11 = jacobian.X, M12 = jacobian.Y, M13 = jacobian.Z };

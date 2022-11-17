@@ -6,6 +6,7 @@ using BEPUutilities;
 using BEPUutilities.DataStructures;
 using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.Settings;
+using FixMath.NET;
 
 namespace BEPUphysics.Character
 {
@@ -19,11 +20,11 @@ namespace BEPUphysics.Character
 
         SupportData supportData;
 
-        private float maximumGlueForce;
+        private Fix64 maximumGlueForce;
         /// <summary>
         /// Gets or sets the maximum force that the constraint will apply in attempting to keep the character stuck to the ground.
         /// </summary>
-        public float MaximumGlueForce
+        public Fix64 MaximumGlueForce
         {
             get
             {
@@ -31,20 +32,20 @@ namespace BEPUphysics.Character
             }
             set
             {
-                if (maximumGlueForce < 0)
+                if (maximumGlueForce < F64.C0)
                     throw new ArgumentException("Value must be nonnegative.");
                 maximumGlueForce = value;
             }
         }
-        float maximumForce;
+        Fix64 maximumForce;
 
-        float supportForceFactor = 1f;
+        Fix64 supportForceFactor = F64.C1;
         /// <summary>
         /// Gets or sets the scaling factor of forces applied to the supporting object if it is a dynamic entity.
         /// Low values (below 1) reduce the amount of motion imparted to the support object; it acts 'heavier' as far as vertical motion is concerned.
         /// High values (above 1) increase the force applied to support objects, making them appear lighter.
         /// </summary>
-        public float SupportForceFactor
+        public Fix64 SupportForceFactor
         {
             get
             {
@@ -52,7 +53,7 @@ namespace BEPUphysics.Character
             }
             set
             {
-                if (value < 0)
+                if (value < F64.C0)
                     throw new ArgumentException("Value must be nonnegative.");
                 supportForceFactor = value;
             }
@@ -62,30 +63,43 @@ namespace BEPUphysics.Character
         /// <summary>
         /// Gets the effective mass felt by the constraint.
         /// </summary>
-        public float EffectiveMass
+        public Fix64 EffectiveMass
         {
             get
             {
                 return effectiveMass;
             }
         }
-        float effectiveMass;
+        Fix64 effectiveMass;
         Entity supportEntity;
         Vector3 linearJacobianA;
         Vector3 linearJacobianB;
         Vector3 angularJacobianB;
 
    
-        float accumulatedImpulse;
-        float permittedVelocity;
+        Fix64 accumulatedImpulse;
+        Fix64 permittedVelocity;
 
-        /// <summary>
-        /// Constructs a new vertical motion constraint.
-        /// </summary>
-        /// <param name="characterBody">Character body governed by the constraint.</param>
-        /// <param name="supportFinder">Support finder used by the character.</param>
-        /// <param name="maximumGlueForce">Maximum force the vertical motion constraint is allowed to apply in an attempt to keep the character on the ground.</param>
-        public VerticalMotionConstraint(Entity characterBody, SupportFinder supportFinder, float maximumGlueForce = 5000)
+		/// <summary>
+		/// Constructs a new vertical motion constraint.
+		/// </summary>
+		/// <param name="characterBody">Character body governed by the constraint.</param>
+		/// <param name="supportFinder">Support finder used by the character.</param>
+		/// <param name="maximumGlueForce">Maximum force the vertical motion constraint is allowed to apply in an attempt to keep the character on the ground.</param>
+		public VerticalMotionConstraint(Entity characterBody, SupportFinder supportFinder)
+		{
+			this.characterBody = characterBody;
+			this.supportFinder = supportFinder;
+			MaximumGlueForce = (Fix64)5000;
+		}
+
+		/// <summary>
+		/// Constructs a new vertical motion constraint.
+		/// </summary>
+		/// <param name="characterBody">Character body governed by the constraint.</param>
+		/// <param name="supportFinder">Support finder used by the character.</param>
+		/// <param name="maximumGlueForce">Maximum force the vertical motion constraint is allowed to apply in an attempt to keep the character on the ground.</param>
+		public VerticalMotionConstraint(Entity characterBody, SupportFinder supportFinder, Fix64 maximumGlueForce)
         {
             this.characterBody = characterBody;
             this.supportFinder = supportFinder;
@@ -134,7 +148,7 @@ namespace BEPUphysics.Character
         /// Performs any per-frame computation needed by the constraint.
         /// </summary>
         /// <param name="dt">Time step duration.</param>
-        public override void Update(float dt)
+        public override void Update(Fix64 dt)
         {
             //Collect references, pick the mode, and configure the coefficients to be used by the solver.
             if (supportData.SupportObject != null)
@@ -164,13 +178,13 @@ namespace BEPUphysics.Character
             //Let the character escape penetration in a controlled manner. This mirrors the regular penetration recovery speed.
             //Since the vertical motion constraint works in the opposite direction of the contact penetration constraint,
             //this actually eliminates the 'bounce' that can occur with non-character objects in deep penetration.
-            permittedVelocity = Math.Min(Math.Max(supportData.Depth * CollisionResponseSettings.PenetrationRecoveryStiffness / dt, 0), CollisionResponseSettings.MaximumPenetrationRecoverySpeed);
+            permittedVelocity = MathHelper.Min(MathHelper.Max(supportData.Depth * CollisionResponseSettings.PenetrationRecoveryStiffness / dt, F64.C0), CollisionResponseSettings.MaximumPenetrationRecoverySpeed);
 
             //Compute the jacobians and effective mass matrix.  This constraint works along a single degree of freedom, so the mass matrix boils down to a scalar.
 
             linearJacobianA = supportData.Normal;
             Vector3.Negate(ref linearJacobianA, out linearJacobianB);
-            float inverseEffectiveMass = characterBody.InverseMass;
+            Fix64 inverseEffectiveMass = characterBody.InverseMass;
             if (supportEntity != null)
             {
                 Vector3 offsetB = supportData.Position - supportEntity.Position;
@@ -182,13 +196,13 @@ namespace BEPUphysics.Character
                     Matrix3x3 inertiaInverse = supportEntity.InertiaTensorInverse;
                     Vector3 angularComponentB;
                     Matrix3x3.Transform(ref angularJacobianB, ref inertiaInverse, out angularComponentB);
-                    float effectiveMassContribution;
+                    Fix64 effectiveMassContribution;
                     Vector3.Dot(ref angularComponentB, ref angularJacobianB, out effectiveMassContribution);
 
                     inverseEffectiveMass += supportForceFactor * (effectiveMassContribution + supportEntity.InverseMass);
                 }
             }
-            effectiveMass = 1f / (inverseEffectiveMass);
+            effectiveMass = F64.C1 / (inverseEffectiveMass);
             //So much nicer and shorter than the horizontal constraint!
 
         }
@@ -224,21 +238,21 @@ namespace BEPUphysics.Character
         /// Computes a solution to the constraint.
         /// </summary>
         /// <returns>Magnitude of the applied impulse.</returns>
-        public override float SolveIteration()
+        public override Fix64 SolveIteration()
         {
             //The relative velocity's x component is in the movement direction.
             //y is the perpendicular direction.
 
             //Note that positive velocity is penetrating velocity.
-            float relativeVelocity = RelativeVelocity + permittedVelocity;
+            Fix64 relativeVelocity = RelativeVelocity + permittedVelocity;
 
 
             //Create the full velocity change, and convert it to an impulse in constraint space.
-            float lambda = -relativeVelocity * effectiveMass;
+            Fix64 lambda = -relativeVelocity * effectiveMass;
 
             //Add and clamp the impulse.
-            float previousAccumulatedImpulse = accumulatedImpulse;
-            accumulatedImpulse = MathHelper.Clamp(accumulatedImpulse + lambda, 0, maximumForce);
+            Fix64 previousAccumulatedImpulse = accumulatedImpulse;
+            accumulatedImpulse = MathHelper.Clamp(accumulatedImpulse + lambda, F64.C0, maximumForce);
             lambda = accumulatedImpulse - previousAccumulatedImpulse;
             //Use the jacobians to put the impulse into world space.
 
@@ -262,7 +276,7 @@ namespace BEPUphysics.Character
                 supportEntity.ApplyLinearImpulse(ref impulse);
                 supportEntity.ApplyAngularImpulse(ref torque);
             }
-            return Math.Abs(lambda);
+            return Fix64.Abs(lambda);
 
 
         }
@@ -270,17 +284,17 @@ namespace BEPUphysics.Character
         /// <summary>
         /// Gets the relative velocity between the character and its support along the support normal.
         /// </summary>
-        public float RelativeVelocity
+        public Fix64 RelativeVelocity
         {
             get
             {
-                float relativeVelocity;
+                Fix64 relativeVelocity;
 
                 Vector3.Dot(ref linearJacobianA, ref characterBody.linearVelocity, out relativeVelocity);
 
                 if (supportEntity != null)
                 {
-                    float supportVelocity;
+                    Fix64 supportVelocity;
                     Vector3.Dot(ref linearJacobianB, ref supportEntity.linearVelocity, out supportVelocity);
                     relativeVelocity += supportVelocity;
                     Vector3.Dot(ref angularJacobianB, ref supportEntity.angularVelocity, out supportVelocity);

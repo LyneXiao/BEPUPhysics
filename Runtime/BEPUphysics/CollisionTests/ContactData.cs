@@ -1,6 +1,7 @@
 ﻿ 
 using System;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUphysics.CollisionTests
 {
@@ -12,7 +13,7 @@ namespace BEPUphysics.CollisionTests
         /// <summary>
         /// Amount of penetration between the two objects.
         /// </summary>
-        public float PenetrationDepth;
+        public Fix64 PenetrationDepth;
 
         /// <summary>
         /// Feature-based id used to match contacts from the previous frame to their current versions.

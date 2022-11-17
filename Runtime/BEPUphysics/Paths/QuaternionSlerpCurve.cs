@@ -1,6 +1,8 @@
 ﻿
 
 using BEPUutilities;
+using FixMath.NET;
+
 namespace BEPUphysics.Paths
 {
     /// <summary>
@@ -15,7 +17,7 @@ namespace BEPUphysics.Paths
         /// <param name="controlPointIndex">Index of the starting control point of the subinterval.</param>
         /// <param name="weight">Location to evaluate on the subinterval from 0 to 1.</param>
         /// <param name="value">Value at the given location.</param>
-        public override void Evaluate(int controlPointIndex, float weight, out Quaternion value)
+        public override void Evaluate(int controlPointIndex, Fix64 weight, out Quaternion value)
         {
             value = Quaternion.Slerp(ControlPoints[controlPointIndex].Value, ControlPoints[controlPointIndex + 1].Value, weight);
         }

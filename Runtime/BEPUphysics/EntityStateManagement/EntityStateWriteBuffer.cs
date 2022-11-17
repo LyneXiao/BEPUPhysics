@@ -31,9 +31,9 @@ namespace BEPUphysics.EntityStateManagement
             internal Quaternion orientationQuaternion;
             [FieldOffset(0)]
             internal Vector3 vector;
-            [FieldOffset(16)]
+            [FieldOffset(32)]
             internal TargetField targetField;
-            [FieldOffset(24)]
+            [FieldOffset(40)]
             internal Entity target;
         }
 #else

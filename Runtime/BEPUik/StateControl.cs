@@ -1,4 +1,7 @@
-﻿namespace BEPUik
+﻿using FixMath.NET;
+using BEPUutilities;
+
+namespace BEPUik
 {
     /// <summary>
     /// Constrains an individual bone in an attempt to reach some position and orientation goal.
@@ -42,11 +45,11 @@
         {
             LinearMotor = new SingleBoneLinearMotor();
             AngularMotor = new SingleBoneAngularMotor();
-            LinearMotor.Rigidity = 1;
-            AngularMotor.Rigidity = 1;
+            LinearMotor.Rigidity = F64.C1;
+            AngularMotor.Rigidity = F64.C1;
         }
 
-        protected internal override void Preupdate(float dt, float updateRate)
+        protected internal override void Preupdate(Fix64 dt, Fix64 updateRate)
         {
             LinearMotor.Preupdate(dt, updateRate);
             AngularMotor.Preupdate(dt, updateRate);
@@ -83,7 +86,7 @@
             AngularMotor.ClearAccumulatedImpulses();
         }
 
-        public override float MaximumForce
+        public override Fix64 MaximumForce
         {
             get { return LinearMotor.MaximumForce; }
             set

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using BEPUutilities;
 using BEPUutilities.DataStructures;
 using BEPUutilities.ResourceManagement;
+using FixMath.NET;
 
 namespace BEPUutilities
 {
@@ -154,9 +155,9 @@ namespace BEPUutilities
                     //If the point is beyond the current triangle, continue.
                     Vector3 offset;
                     Vector3.Subtract(ref maximum, ref points.Elements[outputTriangleIndices.Elements[k]], out offset);
-                    float dot;
+					Fix64 dot;
                     Vector3.Dot(ref normal, ref offset, out dot);
-                    if (dot > 0)
+                    if (dot > F64.C0)
                     {
                         //It's been picked! Remove the maximum point from the outside.
                         outsidePoints.FastRemoveAt(maxIndexInOutsideList);
@@ -239,11 +240,11 @@ namespace BEPUutilities
 
         private static int GetExtremePoint(ref Vector3 direction, RawList<Vector3> points, RawList<int> outsidePoints)
         {
-            float maximumDot = -float.MaxValue;
+            Fix64 maximumDot = -Fix64.MaxValue;
             int extremeIndex = 0;
             for (int i = 0; i < outsidePoints.Count; ++i)
             {
-                float dot;
+                Fix64 dot;
                 Vector3.Dot(ref points.Elements[outsidePoints[i]], ref direction, out dot);
                 if (dot > maximumDot)
                 {
@@ -254,12 +255,12 @@ namespace BEPUutilities
             return extremeIndex;
         }
 
-        private static void GetExtremePoints(ref Vector3 direction, RawList<Vector3> points, out float maximumDot, out float minimumDot, out int maximumIndex, out int minimumIndex)
+        private static void GetExtremePoints(ref Vector3 direction, RawList<Vector3> points, out Fix64 maximumDot, out Fix64 minimumDot, out int maximumIndex, out int minimumIndex)
         {
             maximumIndex = 0;
             minimumIndex = 0;
 
-            float dot;
+            Fix64 dot;
             Vector3.Dot(ref points.Elements[0], ref direction, out dot);
             minimumDot = dot;
             maximumDot = dot;
@@ -286,7 +287,7 @@ namespace BEPUutilities
             int a, b, c, d;
             Vector3 direction;
             //Find the extreme points along the x axis.
-            float minimumX = float.MaxValue, maximumX = -float.MaxValue;
+            Fix64 minimumX = Fix64.MaxValue, maximumX = -Fix64.MaxValue;
             int minimumXIndex = 0, maximumXIndex = 0;
             for (int i = 0; i < points.Count; ++i)
             {
@@ -314,14 +315,14 @@ namespace BEPUutilities
             Vector3.Cross(ref ab, ref Toolbox.UpVector, out direction);
             if (direction.LengthSquared() < Toolbox.Epsilon)
                 Vector3.Cross(ref ab, ref Toolbox.RightVector, out direction);
-            float minimumDot, maximumDot;
+            Fix64 minimumDot, maximumDot;
             int minimumIndex, maximumIndex;
             GetExtremePoints(ref direction, points, out maximumDot, out minimumDot, out maximumIndex, out minimumIndex);
             //Compare the location of the extreme points to the location of the axis.
-            float dot;
+            Fix64 dot;
             Vector3.Dot(ref direction, ref points.Elements[a], out dot);
             //Use the point further from the axis.
-            if (Math.Abs(dot - minimumDot) > Math.Abs(dot - maximumDot))
+            if (Fix64.Abs(dot - minimumDot) > Fix64.Abs(dot - maximumDot))
             {
                 //In this case, we should use the minimum index.
                 c = minimumIndex;
@@ -345,7 +346,7 @@ namespace BEPUutilities
             //Compare the location of the extreme points to the location of the plane.
             Vector3.Dot(ref direction, ref points.Elements[a], out dot);
             //Use the point further from the plane. 
-            if (Math.Abs(dot - minimumDot) > Math.Abs(dot - maximumDot))
+            if (Fix64.Abs(dot - minimumDot) > Fix64.Abs(dot - maximumDot))
             {
                 //In this case, we should use the minimum index.
                 d = minimumIndex;
@@ -381,7 +382,7 @@ namespace BEPUutilities
             Vector3.Add(ref points.Elements[a], ref points.Elements[b], out centroid);
             Vector3.Add(ref centroid, ref points.Elements[c], out centroid);
             Vector3.Add(ref centroid, ref points.Elements[d], out centroid);
-            Vector3.Multiply(ref centroid, 0.25f, out centroid);
+            Vector3.Multiply(ref centroid, F64.C0p25, out centroid);
 
             for (int i = 0; i < triangleIndices.Count; i += 3)
             {
@@ -396,14 +397,14 @@ namespace BEPUutilities
                 Vector3.Cross(ref ac, ref ab, out cross);
                 Vector3 offset;
                 Vector3.Subtract(ref vA, ref centroid, out offset);
-                float volume;
+                Fix64 volume;
                 Vector3.Dot(ref offset, ref cross, out volume);
                 //This volume/cross product could also be used to check for degeneracy, but we already tested for that.
-                if (Math.Abs(volume) < Toolbox.BigEpsilon)
+                if (Fix64.Abs(volume) < Toolbox.BigEpsilon)
                 {
                     throw new ArgumentException("Point set is degenerate; convex hulls must have volume.");
                 }
-                if (volume < 0)
+                if (volume < F64.C0)
                 {
                     //If the signed volume is negative, that means the triangle's winding is opposite of what we want.
                     //Flip it around!
@@ -457,10 +458,10 @@ namespace BEPUutilities
                     //from the triangle face.
                     Vector3 offset;
                     Vector3.Subtract(ref points.Elements[insidePoints.Elements[j]], ref p, out offset);
-                    float dot;
+                    Fix64 dot;
                     Vector3.Dot(ref offset, ref normal, out dot);
                     //If it's visible, then it's outside!
-                    if (dot > 0)
+                    if (dot > F64.C0)
                     {
                         //This point is known to be on the outside; put it on the outside!
                         outsidePoints.Add(insidePoints.Elements[j]);
@@ -493,9 +494,9 @@ namespace BEPUutilities
             //Assume a consistent winding.  Check to see if the normal points at the point.
             Vector3 offset;
             Vector3.Subtract(ref point, ref a, out offset);
-            float dot;
+            Fix64 dot;
             Vector3.Dot(ref offset, ref normal, out dot);
-            return dot >= 0;
+            return dot >= F64.C0;
         }
 
         private static void VerifyWindings(RawList<int> newIndices, RawList<Vector3> points, ref Vector3 centroid)

@@ -1,4 +1,5 @@
 ﻿using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUik
 {
@@ -18,7 +19,7 @@ namespace BEPUik
             Quaternion errorQuaternion;
             Quaternion.Conjugate(ref TargetBone.Orientation, out errorQuaternion);
             Quaternion.Multiply(ref TargetOrientation, ref errorQuaternion, out errorQuaternion);
-            float angle;
+            Fix64 angle;
             Vector3 angularError;
             Quaternion.GetAxisAngleFromQuaternion(ref errorQuaternion, out angularError, out angle);
             Vector3.Multiply(ref angularError, angle, out angularError);

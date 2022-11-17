@@ -1,4 +1,6 @@
-﻿namespace BEPUphysics.BroadPhaseEntries.MobileCollidables
+﻿using FixMath.NET;
+
+namespace BEPUphysics.BroadPhaseEntries.MobileCollidables
 {
     //This is implemented by anything which wants the engine to update its bounding box every frame (so long as it is 'active').
     ///<summary>
@@ -12,7 +14,7 @@
         /// Updates the bounding box of the mobile collidable.
         ///</summary>
         ///<param name="dt">Timestep with which to update the bounding box.</param>
-        public abstract void UpdateBoundingBox(float dt);
+        public abstract void UpdateBoundingBox(Fix64 dt);
 
 
     }

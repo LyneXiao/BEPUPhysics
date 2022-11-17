@@ -1,4 +1,6 @@
-﻿namespace BEPUphysics.Paths
+﻿using FixMath.NET;
+
+namespace BEPUphysics.Paths
 {
     /// <summary>
     /// Curve that wraps another curve and travels along it with specified speeds.
@@ -11,7 +13,7 @@
         /// </summary>
         /// <param name="speedCurve">Curve defining speeds to use.</param>
         /// <param name="curve">Curve to wrap.</param>
-        protected VariableSpeedCurve(Path<float> speedCurve, Curve<TValue> curve)
+        protected VariableSpeedCurve(Path<Fix64> speedCurve, Curve<TValue> curve)
             : base(curve)
         {
             SpeedCurve = speedCurve;
@@ -25,7 +27,7 @@
         /// <param name="curve">Curve to wrap.</param>
         /// <param name="sampleCount">Number of samples to use when constructing the wrapper curve.
         /// More samples increases the accuracy of the speed requirement at the cost of performance.</param>
-        protected VariableSpeedCurve(Path<float> speedCurve, Curve<TValue> curve, int sampleCount)
+        protected VariableSpeedCurve(Path<Fix64> speedCurve, Curve<TValue> curve, int sampleCount)
             : base(curve, sampleCount)
         {
             SpeedCurve = speedCurve;
@@ -36,14 +38,14 @@
         /// Gets or sets the path that defines the speeds at given locations.
         /// The speed curve will be sampled at times associated with the wrapped curve.
         /// </summary>
-        public Path<float> SpeedCurve { get; set; }
+        public Path<Fix64> SpeedCurve { get; set; }
 
         /// <summary>
         /// Gets the speed at a given time on the wrapped curve.
         /// </summary>
         /// <param name="time">Time to evaluate.</param>
         /// <returns>Speed at the given time.</returns>
-        public override float GetSpeedAtCurveTime(double time)
+        public override Fix64 GetSpeedAtCurveTime(Fix64 time)
         {
             return SpeedCurve.Evaluate(time);
         }

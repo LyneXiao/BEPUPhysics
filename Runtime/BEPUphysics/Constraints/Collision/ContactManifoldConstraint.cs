@@ -6,6 +6,7 @@ using BEPUphysics.CollisionTests;
 using BEPUphysics.NarrowPhaseSystems.Pairs;
 using BEPUphysics.CollisionRuleManagement;
 using BEPUphysics.Materials;
+using BEPUutilities;
 
 namespace BEPUphysics.Constraints.Collision
 {
@@ -167,9 +168,9 @@ namespace BEPUphysics.Constraints.Collision
             }
             else
             {
-                materialInteraction.KineticFriction = 0;
-                materialInteraction.StaticFriction = 0;
-                materialInteraction.Bounciness = 0;
+                materialInteraction.KineticFriction = F64.C0;
+                materialInteraction.StaticFriction = F64.C0;
+                materialInteraction.Bounciness = F64.C0;
             }
         }
 

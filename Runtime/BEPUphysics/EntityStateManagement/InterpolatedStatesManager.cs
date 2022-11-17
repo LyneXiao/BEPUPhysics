@@ -2,6 +2,7 @@
 using BEPUphysics.Entities;
 using BEPUutilities;
 using BEPUutilities.Threading;
+using FixMath.NET;
 
 namespace BEPUphysics.EntityStateManagement
 {
@@ -104,7 +105,7 @@ namespace BEPUphysics.EntityStateManagement
         }
 
 
-        float blendAmount;
+        Fix64 blendAmount;
         ///<summary>
         /// Gets or sets the blending amount to use.
         /// This is set automatically when the space is using internal timestepping
@@ -113,7 +114,7 @@ namespace BEPUphysics.EntityStateManagement
         /// in the blended state.  A value of 1 means use only the current frame;
         /// a value of 0 means use only the previous frame.
         ///</summary>
-        public float BlendAmount
+        public Fix64 BlendAmount
         {
             get
             {
@@ -121,7 +122,7 @@ namespace BEPUphysics.EntityStateManagement
             }
             set
             {
-                blendAmount = MathHelper.Clamp(value, 0, 1);
+                blendAmount = MathHelper.Clamp(value, F64.C0, F64.C1);
             }
         }
 

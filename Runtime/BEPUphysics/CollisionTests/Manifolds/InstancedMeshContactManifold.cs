@@ -5,6 +5,7 @@ using BEPUphysics.CollisionShapes.ConvexShapes;
 using BEPUphysics.DataStructures;
 using BEPUutilities;
 using BEPUutilities.DataStructures;
+using FixMath.NET;
 
 namespace BEPUphysics.CollisionTests.Manifolds
 {
@@ -28,7 +29,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
             }
         }
 
-        protected internal override int FindOverlappingTriangles(float dt)
+        protected internal override int FindOverlappingTriangles(Fix64 dt)
         {
             BoundingBox boundingBox;
             convex.Shape.GetLocalBoundingBox(ref convex.worldTransform, ref mesh.worldTransform, out boundingBox);
@@ -40,17 +41,17 @@ namespace BEPUphysics.CollisionTests.Manifolds
                 Matrix3x3.Transform(ref convex.entity.linearVelocity, ref inverse, out transformedVelocity);
                 Vector3.Multiply(ref transformedVelocity, dt, out transformedVelocity);
 
-                if (transformedVelocity.X > 0)
+                if (transformedVelocity.X > F64.C0)
                     boundingBox.Max.X += transformedVelocity.X;
                 else
                     boundingBox.Min.X += transformedVelocity.X;
 
-                if (transformedVelocity.Y > 0)
+                if (transformedVelocity.Y > F64.C0)
                     boundingBox.Max.Y += transformedVelocity.Y;
                 else
                     boundingBox.Min.Y += transformedVelocity.Y;
 
-                if (transformedVelocity.Z > 0)
+                if (transformedVelocity.Z > F64.C0)
                     boundingBox.Max.Z += transformedVelocity.Z;
                 else
                     boundingBox.Min.Z += transformedVelocity.Z;
@@ -77,7 +78,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
             int triangleIndex = overlappedTriangles.Elements[i];
             //TODO: Note the IsQuery hack to avoid missing contacts. Avoid doing this in v2.
             localTriangleShape.sidedness = IsQuery ? TriangleSidedness.DoubleSided : mesh.sidedness;
-            localTriangleShape.collisionMargin = 0;
+            localTriangleShape.collisionMargin = F64.C0;
             indices = new TriangleIndices
             {
                 A = data.indices[triangleIndex],

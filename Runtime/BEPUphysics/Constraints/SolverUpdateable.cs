@@ -3,6 +3,7 @@ using BEPUphysics.Constraints.SolverGroups;
 using BEPUphysics.DeactivationManagement;
 using BEPUphysics.Entities;
 using BEPUutilities.DataStructures;
+using FixMath.NET;
 
 namespace BEPUphysics.Constraints
 {
@@ -222,7 +223,7 @@ namespace BEPUphysics.Constraints
         /// Performs the frame's configuration step.
         ///</summary>
         ///<param name="dt">Timestep duration.</param>
-        public abstract void Update(float dt);
+        public abstract void Update(Fix64 dt);
 
         //Will be locked by the solver during multithreaded updates.
         /// <summary>
@@ -237,7 +238,7 @@ namespace BEPUphysics.Constraints
         /// Computes one iteration of the constraint to meet the solver updateable's goal.
         /// </summary>
         /// <returns>The rough applied impulse magnitude.</returns>
-        public abstract float SolveIteration();
+        public abstract Fix64 SolveIteration();
 
 
         /// <summary>

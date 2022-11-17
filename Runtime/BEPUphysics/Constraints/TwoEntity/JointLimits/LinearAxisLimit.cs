@@ -2,6 +2,7 @@
 using BEPUphysics.Entities;
  
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUphysics.Constraints.TwoEntity.JointLimits
 {
@@ -10,20 +11,20 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
     /// </summary>
     public class LinearAxisLimit : JointLimit, I1DImpulseConstraintWithError, I1DJacobianConstraint
     {
-        private float accumulatedImpulse;
-        private float biasVelocity;
+        private Fix64 accumulatedImpulse;
+        private Fix64 biasVelocity;
         private Vector3 jAngularA, jAngularB;
         private Vector3 jLinearA, jLinearB;
         private Vector3 localAnchorA;
         private Vector3 localAnchorB;
-        private float massMatrix;
-        private float error;
+        private Fix64 massMatrix;
+        private Fix64 error;
         private Vector3 localAxis;
-        private float maximum;
-        private float minimum;
+        private Fix64 maximum;
+        private Fix64 minimum;
         private Vector3 worldAxis;
         private Vector3 rA; //Jacobian entry for entity A.
-        private float unadjustedError;
+        private Fix64 unadjustedError;
         private Vector3 worldAnchorA;
         private Vector3 worldAnchorB;
         private Vector3 worldOffsetA, worldOffsetB;
@@ -50,7 +51,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// <param name="axis">Limited axis in world space to attach to connection A.</param>
         /// <param name="minimum">Minimum allowed position along the axis.</param>
         /// <param name="maximum">Maximum allowed position along the axis.</param>
-        public LinearAxisLimit(Entity connectionA, Entity connectionB, Vector3 anchorA, Vector3 anchorB, Vector3 axis, float minimum, float maximum)
+        public LinearAxisLimit(Entity connectionA, Entity connectionB, Vector3 anchorA, Vector3 anchorB, Vector3 axis, Fix64 minimum, Fix64 maximum)
         {
             ConnectionA = connectionA;
             ConnectionB = connectionB;
@@ -146,7 +147,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// <summary>
         /// Gets or sets the maximum allowed distance along the axis.
         /// </summary>
-        public float Maximum
+        public Fix64 Maximum
         {
             get { return maximum; }
             set
@@ -159,7 +160,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// <summary>
         /// Gets or sets the minimum allowed distance along the axis.
         /// </summary>
-        public float Minimum
+        public Fix64 Minimum
         {
             get { return minimum; }
             set
@@ -202,13 +203,13 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// <summary>
         /// Gets the current relative velocity between the connected entities with respect to the constraint.
         /// </summary>
-        public float RelativeVelocity
+        public Fix64 RelativeVelocity
         {
             get
             {
                 if (isLimitActive)
                 {
-                    float lambda, dot;
+                    Fix64 lambda, dot;
                     Vector3.Dot(ref jLinearA, ref connectionA.linearVelocity, out lambda);
                     Vector3.Dot(ref jAngularA, ref connectionA.angularVelocity, out dot);
                     lambda += dot;
@@ -218,14 +219,14 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                     lambda += dot;
                     return lambda;
                 }
-                return 0;
+                return F64.C0;
             }
         }
 
         /// <summary>
         /// Gets the total impulse applied by this constraint.
         /// </summary>
-        public float TotalImpulse
+        public Fix64 TotalImpulse
         {
             get { return accumulatedImpulse; }
         }
@@ -233,7 +234,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// <summary>
         /// Gets the current constraint error.
         /// </summary>
-        public float Error
+        public Fix64 Error
         {
             get { return error; }
         }
@@ -284,7 +285,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// Gets the mass matrix of the constraint.
         /// </summary>
         /// <param name="outputMassMatrix">Constraint's mass matrix.</param>
-        public void GetMassMatrix(out float outputMassMatrix)
+        public void GetMassMatrix(out Fix64 outputMassMatrix)
         {
             outputMassMatrix = massMatrix;
         }
@@ -295,10 +296,10 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// Computes one iteration of the constraint to meet the solver updateable's goal.
         /// </summary>
         /// <returns>The rough applied impulse magnitude.</returns>
-        public override float SolveIteration()
+        public override Fix64 SolveIteration()
         {
             //Compute the current relative velocity.
-            float lambda, dot;
+            Fix64 lambda, dot;
             Vector3.Dot(ref jLinearA, ref connectionA.linearVelocity, out lambda);
             Vector3.Dot(ref jAngularA, ref connectionA.angularVelocity, out dot);
             lambda += dot;
@@ -314,11 +315,11 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             lambda *= massMatrix;
 
             //Clamp accumulated impulse (can't go negative)
-            float previousAccumulatedImpulse = accumulatedImpulse;
-            if (unadjustedError < 0)
-                accumulatedImpulse = MathHelper.Min(accumulatedImpulse + lambda, 0);
+            Fix64 previousAccumulatedImpulse = accumulatedImpulse;
+            if (unadjustedError < F64.C0)
+                accumulatedImpulse = MathHelper.Min(accumulatedImpulse + lambda, F64.C0);
             else
-                accumulatedImpulse = MathHelper.Max(accumulatedImpulse + lambda, 0);
+                accumulatedImpulse = MathHelper.Max(accumulatedImpulse + lambda, F64.C0);
             lambda = accumulatedImpulse - previousAccumulatedImpulse;
 
             //Apply the impulse
@@ -338,14 +339,14 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                 connectionB.ApplyAngularImpulse(ref impulse);
             }
 
-            return (Math.Abs(lambda));
+            return (Fix64.Abs(lambda));
         }
 
         ///<summary>
         /// Performs the frame's configuration step.
         ///</summary>
         ///<param name="dt">Timestep duration.</param>
-        public override void Update(float dt)
+        public override void Update(Fix64 dt)
         {
             //Compute the 'pre'-jacobians
             Matrix3x3.Transform(ref localAnchorA, ref connectionA.orientationMatrix, out worldOffsetA);
@@ -374,9 +375,9 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                 unadjustedError = maximum - unadjustedError;
             else
             {
-                unadjustedError = 0;
+                unadjustedError = F64.C0;
                 isActiveInSolver = false;
-                accumulatedImpulse = 0;
+                accumulatedImpulse = F64.C0;
                 isLimitActive = false;
                 return;
             }
@@ -384,10 +385,10 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
 
             unadjustedError = -unadjustedError;
             //Adjust Error
-            if (unadjustedError > 0)
-                error = MathHelper.Max(0, unadjustedError - margin);
-            else if (unadjustedError < 0)
-                error = MathHelper.Min(0, unadjustedError + margin);
+            if (unadjustedError > F64.C0)
+                error = MathHelper.Max(F64.C0, unadjustedError - margin);
+            else if (unadjustedError < F64.C0)
+                error = MathHelper.Min(F64.C0, unadjustedError + margin);
 
             //Compute jacobians
             jLinearA = worldAxis;
@@ -398,14 +399,14 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             Vector3.Cross(ref worldOffsetB, ref jLinearB, out jAngularB);
 
             //Compute bias
-            float errorReductionParameter;
-            springSettings.ComputeErrorReductionAndSoftness(dt, 1 / dt, out errorReductionParameter, out softness);
+            Fix64 errorReductionParameter;
+            springSettings.ComputeErrorReductionAndSoftness(dt, F64.C1 / dt, out errorReductionParameter, out softness);
 
             biasVelocity = MathHelper.Clamp(errorReductionParameter * error, -maxCorrectiveVelocity, maxCorrectiveVelocity);
-            if (bounciness > 0)
+            if (bounciness > F64.C0)
             {
                 //Compute currently relative velocity for bounciness.
-                float relativeVelocity, dot;
+                Fix64 relativeVelocity, dot;
                 Vector3.Dot(ref jLinearA, ref connectionA.linearVelocity, out relativeVelocity);
                 Vector3.Dot(ref jAngularA, ref connectionA.angularVelocity, out dot);
                 relativeVelocity += dot;
@@ -413,15 +414,15 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                 relativeVelocity += dot;
                 Vector3.Dot(ref jAngularB, ref connectionB.angularVelocity, out dot);
                 relativeVelocity += dot;
-                if (unadjustedError > 0 && -relativeVelocity > bounceVelocityThreshold)
-                    biasVelocity = Math.Max(biasVelocity, ComputeBounceVelocity(-relativeVelocity));
-                else if (unadjustedError < 0 && relativeVelocity > bounceVelocityThreshold)
-                    biasVelocity = Math.Min(biasVelocity, -ComputeBounceVelocity(relativeVelocity));
+                if (unadjustedError > F64.C0 && -relativeVelocity > bounceVelocityThreshold)
+                    biasVelocity = MathHelper.Max(biasVelocity, ComputeBounceVelocity(-relativeVelocity));
+                else if (unadjustedError < F64.C0 && relativeVelocity > bounceVelocityThreshold)
+                    biasVelocity = MathHelper.Min(biasVelocity, -ComputeBounceVelocity(relativeVelocity));
             }
 
 
             //compute mass matrix
-            float entryA, entryB;
+            Fix64 entryA, entryB;
             Vector3 intermediate;
             if (connectionA.isDynamic)
             {
@@ -430,7 +431,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                 entryA += connectionA.inverseMass;
             }
             else
-                entryA = 0;
+                entryA = F64.C0;
             if (connectionB.isDynamic)
             {
                 Matrix3x3.Transform(ref jAngularB, ref connectionB.inertiaTensorInverse, out intermediate);
@@ -438,8 +439,8 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                 entryB += connectionB.inverseMass;
             }
             else
-                entryB = 0;
-            massMatrix = 1 / (entryA + entryB + softness);
+                entryB = F64.C0;
+            massMatrix = F64.C1 / (entryA + entryB + softness);
 
 
             

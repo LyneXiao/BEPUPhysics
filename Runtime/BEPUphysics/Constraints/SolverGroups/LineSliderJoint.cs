@@ -48,7 +48,7 @@ namespace BEPUphysics.Constraints.SolverGroups
                 connectionB = TwoEntityConstraint.WorldEntity;
             PointOnLineJoint = new PointOnLineJoint(connectionA, connectionB, lineAnchor, lineDirection, pointAnchor);
             AngularJoint = new RevoluteAngularJoint(connectionA, connectionB, lineDirection);
-            Limit = new LinearAxisLimit(connectionA, connectionB, lineAnchor, pointAnchor, lineDirection, 0, 0);
+            Limit = new LinearAxisLimit(connectionA, connectionB, lineAnchor, pointAnchor, lineDirection, F64.C0, F64.C0);
             Motor = new LinearAxisMotor(connectionA, connectionB, lineAnchor, pointAnchor, lineDirection);
             Limit.IsActive = false;
             Motor.IsActive = false;

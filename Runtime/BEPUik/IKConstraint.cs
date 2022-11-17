@@ -1,12 +1,14 @@
-﻿using System;
+﻿using BEPUutilities;
+using FixMath.NET;
+using System;
 
 namespace BEPUik
 {
     public abstract class IKConstraint
     {
-        protected float softness;
+        protected Fix64 softness;
 
-        protected float errorCorrectionFactor;
+        protected Fix64 errorCorrectionFactor;
 
 
         /// <summary>
@@ -15,9 +17,9 @@ namespace BEPUik
         /// <remarks>
         /// This is used over independent coefficients because IK usages of the constraints don't really vary in behavior, just strength.
         /// </remarks>
-        private const float StiffnessOverDamping = 0.25f;
+        private readonly Fix64 StiffnessOverDamping = (Fix64)0.25m;
 
-        private float rigidity = 16;
+        private Fix64 rigidity = F64.C16;
         /// <summary>
         /// Gets the rigidity of the constraint. Higher values correspond to more rigid constraints, lower values to less rigid constraints. Must be positive.
         /// </summary>
@@ -27,7 +29,7 @@ namespace BEPUik
         /// In other words, modifying rigidity without modifying the effective mass of the system results in a variable damping ratio. 
         /// This isn't a huge problem in practice- there is a massive ultra-damping hack in IK bone position integration that make a little physical deviation or underdamping irrelevant.
         /// </remarks>
-        public float Rigidity
+        public Fix64 Rigidity
         {
             get
             {
@@ -35,25 +37,25 @@ namespace BEPUik
             }
             set
             {
-                if (value <= 0)
+                if (value <= F64.C0)
                     throw new ArgumentException("Rigidity must be positive.");
                 rigidity = value;
             }
         }
 
-        protected float maximumImpulse;
-        protected float maximumImpulseSquared;
-        protected float maximumForce = float.MaxValue;
+        protected Fix64 maximumImpulse;
+        protected Fix64 maximumImpulseSquared;
+        protected Fix64 maximumForce = Fix64.MaxValue;
 
         /// <summary>
         /// Gets or sets the maximum force that the constraint can apply.
         /// </summary>
-        public float MaximumForce
+        public Fix64 MaximumForce
         {
             get { return maximumForce; }
             set
             {
-                maximumForce = Math.Max(value, 0);
+                maximumForce = MathHelper.Max(value, F64.C0);
             }
         }
 
@@ -62,15 +64,15 @@ namespace BEPUik
         /// </summary>
         /// <param name="dt">Time step duration.</param>
         /// <param name="updateRate">Inverse time step duration.</param>
-        protected internal void Preupdate(float dt, float updateRate)
+        protected internal void Preupdate(Fix64 dt, Fix64 updateRate)
         {
-            float stiffness = StiffnessOverDamping * rigidity;
-            float damping = rigidity;
-            float multiplier = 1 / (dt * stiffness + damping);
+            Fix64 stiffness = StiffnessOverDamping * rigidity;
+            Fix64 damping = rigidity;
+            Fix64 multiplier = F64.C1 / (dt * stiffness + damping);
             errorCorrectionFactor = stiffness * multiplier;
             softness = updateRate * multiplier;
             maximumImpulse = maximumForce * dt;
-            maximumImpulseSquared = Math.Min(float.MaxValue, maximumImpulse * maximumImpulse);
+            maximumImpulseSquared = Fix64.SafeMul(maximumImpulse, maximumImpulse);
 
         }
 

@@ -1,7 +1,7 @@
 ﻿using System;
 using BEPUphysics.Entities;
 using BEPUutilities;
-
+using FixMath.NET;
 
 namespace BEPUphysics.Constraints.TwoEntity.JointLimits
 {
@@ -26,12 +26,12 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// <summary>
         /// Naximum angle that entities can twist.
         /// </summary>
-        protected float maximumAngle;
+        protected Fix64 maximumAngle;
 
         /// <summary>
         /// Minimum angle that entities can twist.
         /// </summary>
-        protected float minimumAngle;
+        protected Fix64 minimumAngle;
 
         private Vector3 worldTestAxis;
         private Vector2 velocityToImpulse;
@@ -57,7 +57,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// Will also be used as the base rotation axis representing 0 degrees.</param>
         /// <param name="minimumAngle">Minimum twist angle allowed.</param>
         /// <param name="maximumAngle">Maximum twist angle allowed.</param>
-        public RevoluteLimit(Entity connectionA, Entity connectionB, Vector3 limitedAxis, Vector3 testAxis, float minimumAngle, float maximumAngle)
+        public RevoluteLimit(Entity connectionA, Entity connectionB, Vector3 limitedAxis, Vector3 testAxis, Fix64 minimumAngle, Fix64 maximumAngle)
         {
             ConnectionA = connectionA;
             ConnectionB = connectionB;
@@ -113,7 +113,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// <summary>
         /// Gets or sets the maximum angle that entities can twist.
         /// </summary>
-        public float MaximumAngle
+        public Fix64 MaximumAngle
         {
             get { return maximumAngle; }
             set
@@ -129,7 +129,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// <summary>
         /// Gets or sets the minimum angle that entities can twist.
         /// </summary>
-        public float MinimumAngle
+        public Fix64 MinimumAngle
         {
             get { return minimumAngle; }
             set
@@ -169,7 +169,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             {
                 if (isLimitActive)
                 {
-                    float velocityA, velocityB;
+                    Fix64 velocityA, velocityB;
                     Vector2 toReturn = Vector2.Zero;
                     if (minIsActive)
                     {
@@ -272,8 +272,8 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         {
             massMatrix.M11 = velocityToImpulse.X;
             massMatrix.M22 = velocityToImpulse.Y;
-            massMatrix.M12 = 0;
-            massMatrix.M21 = 0;
+            massMatrix.M12 = F64.C0;
+            massMatrix.M21 = F64.C0;
         }
 
         #endregion
@@ -282,12 +282,12 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// Computes one iteration of the constraint to meet the solver updateable's goal.
         /// </summary>
         /// <returns>The rough applied impulse magnitude.</returns>
-        public override float SolveIteration()
+        public override Fix64 SolveIteration()
         {
-            float lambda;
-            float lambdaTotal = 0;
-            float velocityA, velocityB;
-            float previousAccumulatedImpulse;
+            Fix64 lambda;
+            Fix64 lambdaTotal = F64.C0;
+            Fix64 velocityA, velocityB;
+            Fix64 previousAccumulatedImpulse;
             if (minIsActive)
             {
                 //Find the velocity contribution from each connection
@@ -301,7 +301,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
 
                 //Clamp accumulated impulse (can't go negative)
                 previousAccumulatedImpulse = accumulatedImpulse.X;
-                accumulatedImpulse.X = MathHelper.Max(accumulatedImpulse.X + lambda, 0);
+                accumulatedImpulse.X = MathHelper.Max(accumulatedImpulse.X + lambda, F64.C0);
                 lambda = accumulatedImpulse.X - previousAccumulatedImpulse;
 
                 //Apply the impulse
@@ -317,7 +317,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                     connectionB.ApplyAngularImpulse(ref impulse);
                 }
 
-                lambdaTotal += Math.Abs(lambda);
+                lambdaTotal += Fix64.Abs(lambda);
             }
             if (maxIsActive)
             {
@@ -332,7 +332,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
 
                 //Clamp accumulated impulse (can't go negative)
                 previousAccumulatedImpulse = accumulatedImpulse.Y;
-                accumulatedImpulse.Y = MathHelper.Max(accumulatedImpulse.Y + lambda, 0);
+                accumulatedImpulse.Y = MathHelper.Max(accumulatedImpulse.Y + lambda, F64.C0);
                 lambda = accumulatedImpulse.Y - previousAccumulatedImpulse;
 
                 //Apply the impulse
@@ -348,7 +348,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                     connectionB.ApplyAngularImpulse(ref impulse);
                 }
 
-                lambdaTotal += Math.Abs(lambda);
+                lambdaTotal += Fix64.Abs(lambda);
             }
             return lambdaTotal;
         }
@@ -357,7 +357,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
         /// Performs the frame's configuration step.
         ///</summary>
         ///<param name="dt">Timestep duration.</param>
-        public override void Update(float dt)
+        public override void Update(Fix64 dt)
         {
             //Transform the axes into world space.
             basis.rotationMatrix = connectionA.orientationMatrix;
@@ -374,17 +374,17 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             Matrix3x3.Transform(ref basis.xAxis, ref rotation, out maxPlaneNormal);
 
             //Compute the errors along the two normals.
-            float planePositionMin, planePositionMax;
+            Fix64 planePositionMin, planePositionMax;
             Vector3.Dot(ref minPlaneNormal, ref worldTestAxis, out planePositionMin);
             Vector3.Dot(ref maxPlaneNormal, ref worldTestAxis, out planePositionMax);
 
 
-            float span = GetDistanceFromMinimum(maximumAngle);
+            Fix64 span = GetDistanceFromMinimum(maximumAngle);
 
             //Early out and compute the determine the plane normal.
             if (span >= MathHelper.Pi)
             {
-                if (planePositionMax > 0 || planePositionMin > 0)
+                if (planePositionMax > F64.C0 || planePositionMin > F64.C0)
                 {
                     //It's in a perfectly valid configuration, so skip.
                     isActiveInSolver = false;
@@ -399,9 +399,9 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                 if (planePositionMax > planePositionMin)
                 {
                     //It's quicker to escape out to the max plane than the min plane.
-                    error.X = 0;
+                    error.X = F64.C0;
                     error.Y = -planePositionMax;
-                    accumulatedImpulse.X = 0;
+                    accumulatedImpulse.X = F64.C0;
                     minIsActive = false;
                     maxIsActive = true;
                 }
@@ -409,8 +409,8 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                 {
                     //It's quicker to escape out to the min plane than the max plane.
                     error.X = -planePositionMin;
-                    error.Y = 0;
-                    accumulatedImpulse.Y = 0;
+                    error.Y = F64.C0;
+                    accumulatedImpulse.Y = F64.C0;
                     minIsActive = true;
                     maxIsActive = false;
                 }
@@ -419,7 +419,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             }
             else
             {
-                if (planePositionMax > 0 && planePositionMin > 0)
+                if (planePositionMax > F64.C0 && planePositionMin > F64.C0)
                 {
                     //It's in a perfectly valid configuration, so skip.
                     isActiveInSolver = false;
@@ -431,7 +431,7 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                     return;
                 }
 
-                if (planePositionMin <= 0 && planePositionMax <= 0)
+                if (planePositionMin <= F64.C0 && planePositionMax <= F64.C0)
                 {
                     //Escape upward.
                     //Activate both planes.
@@ -440,21 +440,21 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                     minIsActive = true;
                     maxIsActive = true;
                 }
-                else if (planePositionMin <= 0)
+                else if (planePositionMin <= F64.C0)
                 {
                     //It's quicker to escape out to the min plane than the max plane.
                     error.X = -planePositionMin;
-                    error.Y = 0;
-                    accumulatedImpulse.Y = 0;
+                    error.Y = F64.C0;
+                    accumulatedImpulse.Y = F64.C0;
                     minIsActive = true;
                     maxIsActive = false;
                 }
                 else
                 {
                     //It's quicker to escape out to the max plane than the min plane.
-                    error.X = 0;
+                    error.X = F64.C0;
                     error.Y = -planePositionMax;
-                    accumulatedImpulse.X = 0;
+                    accumulatedImpulse.X = F64.C0;
                     minIsActive = false;
                     maxIsActive = true;
                 }
@@ -464,8 +464,8 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
 
             //****** VELOCITY BIAS ******//
             //Compute the correction velocity
-            float errorReduction;
-            springSettings.ComputeErrorReductionAndSoftness(dt, 1 / dt, out errorReduction, out softness);
+            Fix64 errorReduction;
+            springSettings.ComputeErrorReductionAndSoftness(dt, F64.C1 / dt, out errorReduction, out softness);
 
             //Compute the jacobians
             if (minIsActive)
@@ -500,11 +500,11 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             //Error is always positive
             if (minIsActive)
             {
-                biasVelocity.X = MathHelper.Min(MathHelper.Max(0, error.X - margin) * errorReduction, maxCorrectiveVelocity);
-                if (bounciness > 0)
+                biasVelocity.X = MathHelper.Min(MathHelper.Max(F64.C0, error.X - margin) * errorReduction, maxCorrectiveVelocity);
+                if (bounciness > F64.C0)
                 {
-                    float relativeVelocity;
-                    float dot;
+                    Fix64 relativeVelocity;
+                    Fix64 dot;
                     //Find the velocity contribution from each connection
                     Vector3.Dot(ref connectionA.angularVelocity, ref jacobianMinA, out relativeVelocity);
                     Vector3.Dot(ref connectionB.angularVelocity, ref jacobianMinB, out dot);
@@ -514,15 +514,15 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             }
             if (maxIsActive)
             {
-                biasVelocity.Y = MathHelper.Min(MathHelper.Max(0, error.Y - margin) * errorReduction, maxCorrectiveVelocity);
-                if (bounciness > 0)
+                biasVelocity.Y = MathHelper.Min(MathHelper.Max(F64.C0, error.Y - margin) * errorReduction, maxCorrectiveVelocity);
+                if (bounciness > F64.C0)
                 {
                     //Find the velocity contribution from each connection
                     if (maxIsActive)
                     {
-                        float relativeVelocity;
+                        Fix64 relativeVelocity;
                         Vector3.Dot(ref connectionA.angularVelocity, ref jacobianMaxA, out relativeVelocity);
-                        float dot;
+                        Fix64 dot;
                         Vector3.Dot(ref connectionB.angularVelocity, ref jacobianMaxB, out dot);
                         relativeVelocity += dot;
                         biasVelocity.Y = MathHelper.Max(biasVelocity.Y, ComputeBounceVelocity(-relativeVelocity));
@@ -533,8 +533,8 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
 
             //****** EFFECTIVE MASS MATRIX ******//
             //Connection A's contribution to the mass matrix
-            float minEntryA, minEntryB;
-            float maxEntryA, maxEntryB;
+            Fix64 minEntryA, minEntryB;
+            Fix64 maxEntryA, maxEntryB;
             Vector3 transformedAxis;
             if (connectionA.isDynamic)
             {
@@ -544,19 +544,19 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                     Vector3.Dot(ref transformedAxis, ref jacobianMinA, out minEntryA);
                 }
                 else
-                    minEntryA = 0;
+                    minEntryA = F64.C0;
                 if (maxIsActive)
                 {
                     Matrix3x3.Transform(ref jacobianMaxA, ref connectionA.inertiaTensorInverse, out transformedAxis);
                     Vector3.Dot(ref transformedAxis, ref jacobianMaxA, out maxEntryA);
                 }
                 else
-                    maxEntryA = 0;
+                    maxEntryA = F64.C0;
             }
             else
             {
-                minEntryA = 0;
-                maxEntryA = 0;
+                minEntryA = F64.C0;
+                maxEntryA = F64.C0;
             }
             //Connection B's contribution to the mass matrix
             if (connectionB.isDynamic)
@@ -567,24 +567,24 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
                     Vector3.Dot(ref transformedAxis, ref jacobianMinB, out minEntryB);
                 }
                 else
-                    minEntryB = 0;
+                    minEntryB = F64.C0;
                 if (maxIsActive)
                 {
                     Matrix3x3.Transform(ref jacobianMaxB, ref connectionB.inertiaTensorInverse, out transformedAxis);
                     Vector3.Dot(ref transformedAxis, ref jacobianMaxB, out maxEntryB);
                 }
                 else
-                    maxEntryB = 0;
+                    maxEntryB = F64.C0;
             }
             else
             {
-                minEntryB = 0;
-                maxEntryB = 0;
+                minEntryB = F64.C0;
+                maxEntryB = F64.C0;
             }
             //Compute the inverse mass matrix
             //Notice that the mass matrix isn't linked, it's two separate ones.
-            velocityToImpulse.X = 1 / (softness + minEntryA + minEntryB);
-            velocityToImpulse.Y = 1 / (softness + maxEntryA + maxEntryB);
+            velocityToImpulse.X = F64.C1 / (softness + minEntryA + minEntryB);
+            velocityToImpulse.Y = F64.C1 / (softness + maxEntryA + maxEntryB);
 
 
         }
@@ -630,13 +630,13 @@ namespace BEPUphysics.Constraints.TwoEntity.JointLimits
             }
         }
 
-        private float GetDistanceFromMinimum(float angle)
+        private Fix64 GetDistanceFromMinimum(Fix64 angle)
         {
-            if (minimumAngle > 0)
+            if (minimumAngle > F64.C0)
             {
                 if (angle >= minimumAngle)
                     return angle - minimumAngle;
-                if (angle > 0)
+                if (angle > F64.C0)
                     return MathHelper.TwoPi - minimumAngle + angle;
                 return MathHelper.TwoPi - minimumAngle + angle;
             }

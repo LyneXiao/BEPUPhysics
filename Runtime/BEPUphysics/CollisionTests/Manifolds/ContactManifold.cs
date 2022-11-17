@@ -2,6 +2,7 @@
 using BEPUphysics.BroadPhaseEntries;
 using BEPUutilities.DataStructures;
 using BEPUutilities.ResourceManagement;
+using FixMath.NET;
 
 namespace BEPUphysics.CollisionTests.Manifolds
 {
@@ -110,7 +111,7 @@ namespace BEPUphysics.CollisionTests.Manifolds
         /// Updates the manifold.
         ///</summary>
         ///<param name="dt">Timestep duration.</param>
-        public abstract void Update(float dt);
+        public abstract void Update(Fix64 dt);
 
         /// <summary>
         /// Clears the contacts associated with this manifold.

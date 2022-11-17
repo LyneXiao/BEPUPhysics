@@ -54,7 +54,7 @@ namespace BEPUphysics.Constraints.SolverGroups
             AngularJoint = new SwivelHingeAngularJoint(connectionA, connectionB, hingeAxis, -BallSocketJoint.OffsetB);
             HingeLimit = new RevoluteLimit(connectionA, connectionB);
             HingeMotor = new RevoluteMotor(connectionA, connectionB, hingeAxis);
-            TwistLimit = new TwistLimit(connectionA, connectionB, BallSocketJoint.OffsetA, -BallSocketJoint.OffsetB, 0, 0);
+            TwistLimit = new TwistLimit(connectionA, connectionB, BallSocketJoint.OffsetA, -BallSocketJoint.OffsetB, F64.C0, F64.C0);
             TwistMotor = new TwistMotor(connectionA, connectionB, BallSocketJoint.OffsetA, -BallSocketJoint.OffsetB);
             HingeLimit.IsActive = false;
             HingeMotor.IsActive = false;

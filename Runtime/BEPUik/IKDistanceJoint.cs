@@ -1,5 +1,6 @@
 ﻿using System;
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUik
 {
@@ -35,14 +36,14 @@ namespace BEPUik
             set { LocalAnchorB = Quaternion.Transform(value - ConnectionB.Position, Quaternion.Conjugate(ConnectionB.Orientation)); }
         }
 
-        private float distance;
+        private Fix64 distance;
         /// <summary>
         /// Gets or sets the distance that the joint connections should be kept from each other.
         /// </summary>
-        public float Distance
+        public Fix64 Distance
         {
             get { return distance; }
-            set { distance = Math.Max(0, value); }
+            set { distance = MathHelper.Max(F64.C0, value); }
         }
 
         /// <summary>
@@ -73,7 +74,7 @@ namespace BEPUik
             //Compute the distance.
             Vector3 separation;
             Vector3.Subtract(ref anchorB, ref anchorA, out separation);
-            float currentDistance = separation.Length();
+            Fix64 currentDistance = separation.Length();
 
             //Compute jacobians
             Vector3 linearA;
@@ -86,7 +87,7 @@ namespace BEPUik
                 linearA.Y = separation.Y / currentDistance;
                 linearA.Z = separation.Z / currentDistance;
 
-                velocityBias = new Vector3(errorCorrectionFactor * (currentDistance - distance), 0, 0);
+                velocityBias = new Vector3(errorCorrectionFactor * (currentDistance - distance), F64.C0, F64.C0);
             }
             else
             {

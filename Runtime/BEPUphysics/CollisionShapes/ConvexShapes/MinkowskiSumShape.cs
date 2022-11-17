@@ -5,6 +5,7 @@ using BEPUutilities;
 
 using BEPUutilities.DataStructures;
 using BEPUutilities.ResourceManagement;
+using FixMath.NET;
 
 namespace BEPUphysics.CollisionShapes.ConvexShapes
 {
@@ -184,7 +185,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             var triangles = CommonResources.GetIntList();
             ConvexHullHelper.GetConvexHull(samples, triangles);
 
-            float volume;
+            Fix64 volume;
             Vector3 center;
             InertiaHelper.ComputeShapeDistribution(samples, triangles, out center, out volume, out volumeDistribution);
             Volume = volume;
@@ -195,7 +196,7 @@ namespace BEPUphysics.CollisionShapes.ConvexShapes
             CommonResources.GiveBack(triangles);
 
             //Compute the radii.
-            float minRadius = 0, maxRadius = 0;
+            Fix64 minRadius = F64.C0, maxRadius = F64.C0;
             for (int i = 0; i < shapes.Count; i++)
             {
                 minRadius += shapes.WrappedList.Elements[i].CollisionShape.MinimumRadius;

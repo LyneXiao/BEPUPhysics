@@ -47,7 +47,7 @@ namespace BEPUphysics.Constraints.SolverGroups
                 connectionB = TwoEntityConstraint.WorldEntity;
             BallSocketJoint = new BallSocketJoint(connectionA, connectionB, anchor);
             TwistJoint = new TwistJoint(connectionA, connectionB, BallSocketJoint.OffsetA, -BallSocketJoint.OffsetB);
-            Limit = new TwistLimit(connectionA, connectionB, BallSocketJoint.OffsetA, -BallSocketJoint.OffsetB, 0, 0);
+            Limit = new TwistLimit(connectionA, connectionB, BallSocketJoint.OffsetA, -BallSocketJoint.OffsetB, F64.C0, F64.C0);
             Motor = new TwistMotor(connectionA, connectionB, BallSocketJoint.OffsetA, -BallSocketJoint.OffsetB);
             Limit.IsActive = false;
             Motor.IsActive = false;

@@ -4,6 +4,7 @@ using BEPUphysics.BroadPhaseEntries.MobileCollidables;
 using BEPUphysics.CollisionTests.CollisionAlgorithms.GJK;
  
 using BEPUutilities;
+using FixMath.NET;
 
 namespace BEPUphysics.CollisionTests.CollisionAlgorithms
 {
@@ -141,7 +142,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             
             Vector3 displacement;
             Vector3.Subtract(ref closestB, ref closestA, out displacement);
-            float distanceSquared = displacement.LengthSquared();
+            Fix64 distanceSquared = displacement.LengthSquared();
 
             if (distanceSquared < Toolbox.Epsilon)
             {
@@ -150,7 +151,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
             }
 
             localDirection = displacement; //Use this as the direction for future deep contacts.
-            float margin = collidableA.Shape.collisionMargin + collidableB.Shape.collisionMargin;
+            Fix64 margin = collidableA.Shape.collisionMargin + collidableB.Shape.collisionMargin;
 
 
             if (distanceSquared < margin * margin)
@@ -166,7 +167,7 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
                 Vector3.Add(ref closestA, ref contact.Position, out contact.Position); //A + t * AB.
 
                 contact.Normal = displacement;
-                float distance = (float)Math.Sqrt(distanceSquared);
+                Fix64 distance = Fix64.Sqrt(distanceSquared);
                 Vector3.Divide(ref contact.Normal, distance, out contact.Normal);
                 contact.PenetrationDepth = margin - distance;
                 return true;
@@ -224,25 +225,25 @@ namespace BEPUphysics.CollisionTests.CollisionAlgorithms
 
             //    //First, try to use the heuristically found direction.  This comes from either the GJK shallow contact separating axis or from the relative velocity.
             //    Vector3 rayCastDirection;
-            //    float lengthSquared = localDirection.LengthSquared();
+            //    Fix64 lengthSquared = localDirection.LengthSquared();
             //    if (lengthSquared > Toolbox.Epsilon)
             //    {
-            //        Vector3.Divide(ref localDirection, (float)Math.Sqrt(lengthSquared), out rayCastDirection);// (Vector3.Normalize(localDirection) + Vector3.Normalize(collidableB.worldTransform.Position - collidableA.worldTransform.Position)) / 2;
+            //        Vector3.Divide(ref localDirection, Fix64.Sqrt(lengthSquared), out rayCastDirection);// (Vector3.Normalize(localDirection) + Vector3.Normalize(collidableB.worldTransform.Position - collidableA.worldTransform.Position)) / 2;
             //        MPRTesting.LocalSurfaceCast(collidableA.Shape, collidableB.Shape, ref localTransformB, ref rayCastDirection, out contact.PenetrationDepth, out contact.Normal);
             //    }
             //    else
             //    {
-            //        contact.PenetrationDepth = float.MaxValue;
+            //        contact.PenetrationDepth = Fix64.MaxValue;
             //        contact.Normal = Toolbox.UpVector;
             //    }
             //    //Try the offset between the origins as a second option.  Sometimes this is a better choice than the relative velocity.
             //    //TODO: Could use the position-finding MPR iteration to find the A-B direction hit by continuing even after the origin has been found (optimization).
             //    Vector3 normalCandidate;
-            //    float depthCandidate;
+            //    Fix64 depthCandidate;
             //    lengthSquared = localTransformB.Position.LengthSquared();
             //    if (lengthSquared > Toolbox.Epsilon)
             //    {
-            //        Vector3.Divide(ref localTransformB.Position, (float)Math.Sqrt(lengthSquared), out rayCastDirection);
+            //        Vector3.Divide(ref localTransformB.Position, Fix64.Sqrt(lengthSquared), out rayCastDirection);
             //        MPRTesting.LocalSurfaceCast(collidableA.Shape, collidableB.Shape, ref localTransformB, ref rayCastDirection, out depthCandidate, out normalCandidate);
             //        if (depthCandidate < contact.PenetrationDepth)
             //        {

@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using BEPUutilities;
 using BEPUutilities.DataStructures;
+using FixMath.NET;
 
 namespace BEPUphysics.Paths
 {
@@ -33,7 +34,7 @@ namespace BEPUphysics.Paths
         /// <param name="controlPointIndex">Index of the starting control point of the subinterval.</param>
         /// <param name="weight">Location to evaluate on the subinterval from 0 to 1.</param>
         /// <param name="value">Value at the given location.</param>
-        public override void Evaluate(int controlPointIndex, float weight, out Vector3 value)
+        public override void Evaluate(int controlPointIndex, Fix64 weight, out Vector3 value)
         {
             value = Vector3.Hermite(
                 ControlPoints[controlPointIndex].Value, tangents[controlPointIndex],

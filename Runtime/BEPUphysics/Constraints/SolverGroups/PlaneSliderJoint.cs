@@ -53,9 +53,9 @@ namespace BEPUphysics.Constraints.SolverGroups
             if (connectionB == null)
                 connectionB = TwoEntityConstraint.WorldEntity;
             PointOnPlaneJoint = new PointOnPlaneJoint(connectionA, connectionB, planeAnchor, planeNormal, pointAnchor);
-            LimitX = new LinearAxisLimit(connectionA, connectionB, planeAnchor, pointAnchor, xAxis, 0, 0);
+            LimitX = new LinearAxisLimit(connectionA, connectionB, planeAnchor, pointAnchor, xAxis, F64.C0, F64.C0);
             MotorX = new LinearAxisMotor(connectionA, connectionB, planeAnchor, pointAnchor, xAxis);
-            LimitY = new LinearAxisLimit(connectionA, connectionB, planeAnchor, pointAnchor, yAxis, 0, 0);
+            LimitY = new LinearAxisLimit(connectionA, connectionB, planeAnchor, pointAnchor, yAxis, F64.C0, F64.C0);
             MotorY = new LinearAxisMotor(connectionA, connectionB, planeAnchor, pointAnchor, yAxis);
             LimitX.IsActive = false;
             MotorX.IsActive = false;

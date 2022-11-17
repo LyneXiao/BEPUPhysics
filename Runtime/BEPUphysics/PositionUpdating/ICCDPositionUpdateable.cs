@@ -1,4 +1,6 @@
-﻿namespace BEPUphysics.PositionUpdating
+﻿using FixMath.NET;
+
+namespace BEPUphysics.PositionUpdating
 {
     ///<summary>
     /// Update modes for position updateables.
@@ -29,13 +31,13 @@
         /// Updates the time of impacts associated with the updateable.
         ///</summary>
         ///<param name="dt">Time step duration.</param>
-        void UpdateTimesOfImpact(float dt);
+        void UpdateTimesOfImpact(Fix64 dt);
 
         /// <summary>
         /// Updates the updateable using its continuous nature.
         /// </summary>
         /// <param name="dt">Time step duration.</param>
-        void UpdatePositionContinuously(float dt);
+        void UpdatePositionContinuously(Fix64 dt);
 
         /// <summary>
         /// Gets or sets the position update mode of the object.

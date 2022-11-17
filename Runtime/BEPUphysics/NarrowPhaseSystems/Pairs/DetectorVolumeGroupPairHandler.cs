@@ -2,6 +2,7 @@
 using BEPUphysics.CollisionRuleManagement;
 using BEPUutilities.DataStructures;
 using BEPUphysics.BroadPhaseEntries.MobileCollidables;
+using FixMath.NET;
 
 namespace BEPUphysics.NarrowPhaseSystems.Pairs
 {
@@ -11,7 +12,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
     public abstract class DetectorVolumeGroupPairHandler : DetectorVolumePairHandler, IDetectorVolumePairHandlerParent
     {
         Dictionary<EntityCollidable, DetectorVolumePairHandler> subPairs = new Dictionary<EntityCollidable, DetectorVolumePairHandler>();
-        HashSet<EntityCollidable> containedPairs = new HashSet<EntityCollidable>();
+        BEPUutilities.DataStructures.HashSet<EntityCollidable> containedPairs = new BEPUutilities.DataStructures.HashSet<EntityCollidable>();
         RawList<EntityCollidable> pairsToRemove = new RawList<EntityCollidable>();
 
         /// <summary>
@@ -70,7 +71,7 @@ namespace BEPUphysics.NarrowPhaseSystems.Pairs
 
         protected abstract void UpdateContainedPairs();
 
-        public override void UpdateCollision(float dt)
+        public override void UpdateCollision(Fix64 dt)
         {
             WasContaining = Containing;
             WasTouching = Touching;
